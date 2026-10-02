@@ -119,8 +119,7 @@ Get a detailed breakdown of your auction performance:
 
 **1. Clone the repository**
 ```bash
-git clone https://github.com/Venkat262005/PLAYAUCTION---A-MULTI-LEAGUE-AUCTION-GAME.git
-cd PLAYAUCTION---A-MULTI-LEAGUE-AUCTION-GAME
+git clone https://github.com/sai-kumar-277/Play-Auction
 ```
 
 **2. Setup Backend**
@@ -320,19 +319,14 @@ We welcome contributions! Here's how:
 
 ---
 
-## 📄 License
-
-This project is licensed under the **ISC License**.
-
----
 
 ## 👥 Team
 
 Built by cricket fans, for cricket fans.
 
-### **Venkat**
+### **Sai Kumar**
 🔧 **Focus**: Creator, Lead Developer, Architect  
-📧 **GitHub**: [@Venkat262005](https://github.com/Venkat262005)  
+📧 **GitHub**: [@sai-kumar-277](https://github.com/sai-kumar-277)  
 💡 *"Bringing the intensity of the auction room to your living room."*
 
 ---
