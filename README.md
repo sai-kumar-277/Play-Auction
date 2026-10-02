@@ -1,184 +1,96 @@
+🌟 PlayAuction
+The Ultimate Multi-League Cricket Auction Platform
+Built for cricket enthusiasts, fantasy leagues, and friends who want to experience the thrill of a real-time mega auction.
 
-Presentation-Link: https://drive.google.com/file/d/1DN6u87A_lVMD01ypPb8E3JY_jxVa2wPT/view?usp=sharing
+📖 Why We Built This
+Ever tried hosting a mock IPL auction with friends? It usually involves chaotic WhatsApp groups, messy Excel sheets, someone forgetting the budget, and constant arguments about who bid first. 
+We wanted the real experience—the tension of the timer, the gavel slam, the strategic RTM (Right to Match) cards, and the thrill of outbidding your friends. 
+PlayAuction was born from this exact frustration. We wanted to build a platform that doesn't just track bids, but recreates the entire auction room atmosphere. 
 
-# PLayAuction — Multi-League Cricket Auction Platform
+🎯 The problems we solved:
+- 📱 Scattered tracking: No more messy spreadsheets or WhatsApp bids.
+- 🕒 Real-time chaos: Synchronized bidding with live timers so everyone is on the same page.
+- 🏏 League limitations: Why just IPL? We added WPL and SA20 support with accurate rules.
+- 🤖 Missing players: Not enough friends? Configurable AI bots will bid against you.
+- 📊 Post-auction blues: Once it's over, AI evaluates your squad and rates your performance!
 
-A full-stack, real-time cricket auction platform supporting **IPL**, **WPL**, and **SA20** leagues. Built with React 19, Node.js, Express, Socket.io, and MongoDB. Features live bidding, AI-powered squad evaluation, a post-auction quiz phase, voice controls, an admin panel, and an immersive animated UI.
+🏗️ System Architecture
+┌─────────────────────────────────────────────────────────────────┐
+│                           CLIENT SIDE                           │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │             React Frontend (Vite + TailwindCSS)           │  │
+│  │                                                           │  │
+│  │  ┌────────────┐  ┌────────────┐  ┌─────────────────┐      │  │
+│  │  │  Auction   │  │   Squad    │  │    Admin      │      │  │
+│  │  │   Arena    │  │ Evaluation │  │  Dashboard    │      │  │
+│  │  └────────────┘  └────────────┘  └─────────────────┘      │  │
+│  └────────────────────────────┬──────────────────────────────┘  │
+└───────────────────────────────┼─────────────────────────────────┘
+                   HTTPS/REST API & Socket.io 
+┌───────────────────────────────▼─────────────────────────────────┐
+│                           SERVER SIDE                           │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │                   Express.js Backend                      │  │
+│  │                                                           │  │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────┐    │  │
+│  │  │ Socket.io│  │ Auction  │  │  Auth &  │  │   AI    │    │  │
+│  │  │  Engine  │  │  Routes  │  │  Admin   │  │ Services│    │  │
+│  │  └──────────┘  └──────────┘  └──────────┘  └─────────┘    │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└───────────┬────────────────────┬────────────────────────────────┘
+            │                    │
+            ▼                    ▼
+   ┌───────────────────┐  ┌─────────────────────────┐
+   │    MongoDB Atlas  │  │     Google Gemini /     │
+   │                   │  │       Groq AI           │
+   │ ┌───────────────┐ │  │ ┌─────────────────────┐ │
+   │ │  ipl, sa20,   │ │  │ │ AI Squad Evaluation │ │
+   │ │ wpl databases │ │  │ │  & Quiz Generation  │ │
+   │ └───────────────┘ │  │ └─────────────────────┘ │
+   └───────────────────┘  └─────────────────────────┘
 
----
+✨ Features Walkthrough
 
-## 🚀 Features
+🏏 Multi-League Support
+Experience the auction in your favorite format.
+- Run auctions for IPL (15 franchises), WPL (5 franchises), or SA20 (6 franchises).
+- League-specific rules, budgets, logos, and player pools.
+- Pre-auction retentions and RTM logic for accurate squad building.
 
-- **Multi-League Support** — Run auctions for IPL (15 franchises), WPL (5 franchises), or SA20 (6 franchises) with league-specific rules, budgets, logos, and player pools.
-- **Real-Time Bidding** — Synchronized bidding via Socket.io with live timer, RTM (Right to Match) cards, and bid increment rules per league.
-- **Retention & RTM System** — Pre-auction player retentions and RTM card logic for WPL and SA20 leagues with validation against previous-season squads.
-- **AI-Powered Squad Evaluation** — Google Gemini + Groq/LangChain integration evaluates team squads at auction end and generates ratings, insights, and recommendations.
-- **Post-Auction Quiz Phase** — Built-in cricket quiz arena with leaderboard to extend the game experience after the auction.
-- **Admin Panel** — Secure JWT-authenticated admin dashboard to manage rooms, players, and auction data.
-- **AI Bot Players** — Configurable AI bots that participate in bidding when human teams are unavailable.
-- **Immersive UI** — Animated splash screen, fullscreen toggle, credits modal, background video/audio, and voice controls.
-- **Voice Controls** — Text-to-speech auction announcements via a dedicated `VoiceContext`.
-- **Feedback System** — In-app feedback widget with a persistent `Feedback` model.
-- **Public & Private Rooms** — Create private rooms or join browsable public rooms filtered by league.
-- **Session Recovery** — Ongoing auction rooms auto-resume after server restarts by rehydrating state from MongoDB.
-- **Live Leaderboard** — Real-time team rankings with AI-driven scores during and after the auction.
-- **Squad Share Cards** — Generate and share team result cards using `html-to-image` and canvas confetti effects.
+⚡ Real-Time Bidding Engine
+The core of the excitement.
+- Synchronized bidding across all clients via Socket.io.
+- Live timer, automated bid increments, and real-time gavel slams.
+- Immersive UI with voice announcements and background music.
 
----
+🤖 AI-Powered Squad Evaluation
+What happens after the hammer falls?
+- Google Gemini + Groq/LangChain analyzes your final squad.
+- Get AI-generated team ratings, insights, playing XI recommendations, and weaknesses.
 
-## 🛠️ Tech Stack
+🎓 Post-Auction Quiz Arena
+Keep the fun going!
+- Built-in cricket quiz generated dynamically based on the league.
+- Live leaderboard to compete with your auction rivals.
 
-### Frontend (`client/`)
-| Technology | Purpose |
-|---|---|
-| React 19 + Vite 7 | Core UI framework and build tool |
-| React Router v7 | Client-side routing |
-| Tailwind CSS 3 | Utility-first styling |
-| Framer Motion | Page and component animations |
-| Socket.io-client | Real-time bidding and state sync |
-| Lucide React + React Icons | Icon library |
-| html-to-image | Squad share card generation |
-| canvas-confetti | Celebration effects |
-| Inter & Outfit (Fontsource) | Premium typography |
+🚀 Quick Start
 
-### Backend (`server/`)
-| Technology | Purpose |
-|---|---|
-| Node.js + Express 5 | HTTP server and REST API |
-| Socket.io 4 | Real-time WebSocket engine |
-| MongoDB + Mongoose 9 | Primary database (multi-database: `ipl`, `SA20`, `wpl`) |
-| Google Generative AI (Gemini) | AI squad evaluation and quiz generation |
-| Groq SDK + LangChain | Secondary AI inference pipeline |
-| JWT + bcryptjs | Admin authentication |
-| UUID | Room code and session ID generation |
-| Nodemon | Development hot-reload |
+Prerequisites
+- Node.js (v20 or higher)
+- npm or yarn
+- MongoDB (local or Atlas) with separate databases: ipl, SA20, wpl
+- Google Gemini API Key
+- Groq API Key
 
----
+Installation
+1. Clone the repository
+git clone 
+cd PLAYAUCTION---A-MULTI-LEAGUE-AUCTION-GAME
 
-## ⚙️ Prerequisites
-
-- **Node.js** — Latest LTS version (v20+)
-- **MongoDB** — Running locally or a cloud instance (MongoDB Atlas recommended)
-  - Requires separate databases: `ipl`, `SA20`, `wpl`
-- **Gemini API Key** — For AI squad evaluation (`GOOGLE_API_KEY` / `GEMINI_API_KEY`)
-- **Groq API Key** — For secondary AI inference (`GROQ_API_KEY`)
-
----
-
-## 📂 Project Structure
-
-```text
-auctiononline/
-├── client/                        # Frontend React application
-│   ├── public/
-│   │   ├── ipl_logos/             # IPL franchise logos (15 teams)
-│   │   ├── sa20_logos/            # SA20 franchise logos (6 teams)
-│   │   ├── wpl_logos/             # WPL franchise logos (5 teams)
-│   │   ├── sounds/                # Auction sound effects
-│   │   ├── Auction-bg.mp4         # Splash screen background video
-│   │   ├── Ascension_of_the_Dawn.mp4  # Ambient background music
-│   │   ├── role-bowler.png        # Bowler role icon
-│   │   └── role-wk.png            # Wicket-keeper role icon
-│   ├── quiz/                      # Quiz question sets (IPL, WPL, SA20 .txt files)
-│   └── src/
-│       ├── components/
-│       │   ├── Admin/             # Admin-specific UI components
-│       │   ├── immersive/         # SplashScreen, ImmersiveWrapper, AnimatedBackground, etc.
-│       │   ├── AuctionSubComponents.jsx  # Bid panel, player card, team panel
-│       │   ├── FeedbackWidget.jsx
-│       │   ├── GavelSlam.jsx
-│       │   ├── GlobalResultCard.jsx
-│       │   ├── QuizOverlay.jsx
-│       │   ├── TeamShareCard.jsx
-│       │   ├── Toast.jsx
-│       │   └── VoiceControls.jsx
-│       ├── context/
-│       │   ├── SessionContext.jsx  # User session & room state
-│       │   ├── SocketContext.jsx   # Socket.io connection
-│       │   └── VoiceContext.jsx    # Text-to-speech voice announcements
-│       ├── pages/
-│       │   ├── Admin/
-│       │   │   ├── AdminLogin.jsx
-│       │   │   └── AdminDashboard.jsx
-│       │   ├── AuctionPodium.jsx   # Main auction room page
-│       │   ├── EvaluationLobby.jsx # Post-auction AI evaluation waiting screen
-│       │   ├── Lobby.jsx           # Room creation / joining page
-│       │   ├── PublicRooms.jsx     # Browse public auction rooms
-│       │   ├── QuizArena.jsx       # Post-auction cricket quiz
-│       │   └── ResultsReveal.jsx   # Final results & leaderboard
-│       └── utils/
-│           ├── bidRules.js         # Bid increment logic
-│           ├── legendConfig.js     # Legend player configuration
-│           ├── playerUtils.js      # Currency conversion, player helpers
-│           ├── soundEngine.js      # Audio playback engine
-│           └── teamSlogans.js      # Team slogans for UI
-│
-└── server/                        # Backend Express + Socket.io server
-    ├── config/
-    │   └── db.js                  # MongoDB connection (multi-DB support)
-    ├── models/
-    │   ├── ActiveRoom.js          # In-progress auction room state
-    │   ├── Admin.js               # Admin user model
-    │   ├── AuctionRoom.js         # Legacy auction room model
-    │   ├── AuctionTransaction.js  # Bid transaction records
-    │   ├── CompletedRoom.js       # Archived finished rooms
-    │   ├── Feedback.js            # User feedback submissions
-    │   ├── Franchise.js           # Franchise/team data
-    │   ├── Player.js              # Player document model
-    │   └── Room.js                # Base room model
-    ├── routes/
-    │   ├── api.js                 # Public API endpoints (players, rooms)
-    │   ├── admin.js               # Admin-only protected endpoints
-    │   └── session.js             # Session management endpoints
-    ├── scripts/
-    │   ├── check_ai_status.js     # Verify Gemini/Groq AI connectivity
-    │   ├── createAdmin.js         # Create an admin user
-    │   └── seedAdmin.js           # Seed default admin credentials
-    ├── seed/                      # Database seed scripts
-    ├── services/
-    │   ├── AIQueue.js             # Serialized AI request queue
-    │   ├── DBBatchedWriter.js     # Batched DB write scheduler
-    │   ├── aiRating.js            # AI squad rating & Playing 11 selection
-    │   ├── auctionCleanup.js      # Stagnant room cleanup service
-    │   ├── dbWriter.js            # Periodic dirty-room flusher
-    │   ├── geminiTeamEvaluation.js  # Gemini-based team evaluation
-    │   ├── playerService.js       # Player fetch and search service
-    │   ├── quizEngine.js          # Quiz question generation & management
-    │   ├── sa20History.js         # SA20 previous-season squad data & retention logic
-    │   └── wplHistory.js          # WPL previous-season squad data & retention logic
-    ├── socket/
-    │   └── auctionEngine.js       # Core Socket.io event handlers & auction state machine
-    └── utils/
-        ├── PlayerCache.js         # In-memory player lookup cache
-        ├── Validation.js          # Input validation helpers
-        ├── adminHelpers.js        # Admin utility functions
-        ├── bidRules.js            # Server-side bid increment & snap logic
-        ├── legendRules.js         # Legend player detection rules
-        ├── playerNormalizer.js    # Normalize player data across leagues
-        ├── quizHelpers.js         # Quiz question formatting helpers
-        └── sa20PlayerRules.js     # SA20-specific player eligibility rules
-```
-
----
-
-## 🛠️ Setup Instructions
-
-### 1. Clone the Repository
-```bash
-git clone <your-repo-url>
-cd auctiononline
-```
-
-### 2. Backend Setup
-
-```bash
+2. Setup Backend
 cd server
 npm install
-```
-
-Create a `.env` file in the `server/` directory:
-
-```env
+# Create .env file with:
 PORT=5001
 MONGODB_URI=your_mongodb_connection_string
 GOOGLE_API_KEY=your_gemini_api_key
@@ -187,79 +99,132 @@ GEMINI_MODEL=gemini-2.5-flash
 GROQ_API_KEY=your_groq_api_key
 JWT_SECRET=your_jwt_secret_key
 NODE_ENV=development
-# Only required for production keep-alive (Render.com free tier):
-# SERVER_URL=https://your-server-url.onrender.com
-```
+# Start backend server
+npm run dev
 
-Start the backend server:
-```bash
-npm run dev        # Development (nodemon hot-reload)
-npm start          # Production
-npm run check-ai   # Verify AI API connectivity
-```
-
-### 3. Frontend Setup
-
-```bash
-cd client
+3. Setup Frontend
+cd ../client
 npm install
-```
-
-Create a `.env` file in the `client/` directory:
-
-```env
+# Create .env file with:
 VITE_API_URL=http://localhost:5001
-```
+# Start frontend dev server
+npm run dev
 
-> **Note:** The Vite dev server proxies `/api` and `/socket.io` to `http://127.0.0.1:5001` automatically via `vite.config.js`. The `.env` variable is used for production builds.
+4. Open in browser
+Navigate to http://localhost:5173
 
-Start the frontend:
-```bash
-npm run dev      # Development server
-npm run build    # Production build
-npm run preview  # Preview production build
-```
+🛠️ Tech Stack
 
-### 4. Admin Setup
-
-After the server is running, create an admin user:
-
-```bash
-cd server
-node scripts/createAdmin.js
-# or
-node scripts/seedAdmin.js
-```
-
-Access the admin dashboard at `/admin/login`.
-
----
-
-## 🗄️ Database Setup
-
-This project uses **three separate MongoDB databases**:
-
-| Database | Contents |
+Frontend
+| Technology | Purpose |
 |---|---|
-| `ipl` | IPL player pools, franchises |
-| `SA20` | SA20 player pools, franchises |
-| `wpl` | WPL player pools, franchises |
+| React 19 + Vite 7 | Core UI framework and lightning-fast builds |
+| TailwindCSS 3 | Utility-first styling for a sleek, immersive UI |
+| Framer Motion | Smooth page and component animations |
+| Socket.io-client| Real-time state sync with the auction room |
+| html-to-image | Shareable squad result cards generation |
+| canvas-confetti | Post-auction celebrations! |
 
-All three are accessed from the same MongoDB connection string via Mongoose's `useDb()`. Player pool collections (e.g. `capped_players`, `uncapped_players`, `presigned_players`) must be populated in each database before running an auction.
+Backend
+| Technology | Purpose |
+|---|---|
+| Node.js + Express 5 | Robust REST API server |
+| Socket.io 4 | Low-latency WebSockets for live bidding |
+| MongoDB + Mongoose 9 | Multi-tenant database architecture (IPL, WPL, SA20) |
+| Google Gemini API | Advanced squad analysis and quiz generation |
+| Groq SDK + LangChain| Fast secondary AI inference pipeline |
+| JWT + bcryptjs | Secure admin authentication |
 
-Seed scripts in `server/seed/` can be used to import initial data.
+📁 Project Structure
+PLAYAUCTION/
+├── client/                 # React frontend application
+│   ├── public/             # Team logos, sounds, and background videos
+│   ├── src/
+│   │   ├── components/     # Reusable UI components (Bid panel, Player cards)
+│   │   ├── context/        # Session, Socket, and Voice contexts
+│   │   ├── pages/          # Auction Podium, Lobby, Results, Admin
+│   │   └── utils/          # Bid logic, audio engine, etc.
+│   └── package.json
+└── server/                 # Express + Socket.io backend
+    ├── config/             # DB connections
+    ├── models/             # Mongoose schemas (Rooms, Players, Franchises)
+    ├── routes/             # REST API routes
+    ├── services/           # AI Queue, DB Batched Writers, Evaluation
+    ├── socket/             # Core Socket.io event handlers
+    ├── utils/              # Player caching and validation
+    └── package.json
 
----
+📖 How to Use
 
-## 🌐 Deployment
+Starting an Auction
+1. Admin creates a room (Public or Private) for a specific league.
+2. Players join the room using the 6-digit room code.
+3. Once all franchises are claimed, Admin starts the auction.
+4. The bot brings up players one by one, and franchises bid in real-time.
 
-The application is configured for deployment on **Render.com** (backend) and **Vercel** (frontend).
+Managing the Room
+- Admin can pause the auction, skip players, or undo the last bid.
+- RTM cards can be exercised when applicable.
 
-- **Backend**: Set `NODE_ENV=production` and `SERVER_URL` in Render environment variables. The server includes a self-ping every 14 minutes to prevent Render free-tier spin-down.
-- **Frontend**: `client/vercel.json` handles SPA routing rewrites for Vercel deployment.
+After the Auction
+- View the AI Evaluation of your squad.
+- Play the interactive Quiz Arena.
+- Generate and download your beautiful Team Squad Card to share on social media!
 
----
+🔐 Security & Privacy
+- JWT-based authentication for the Admin Dashboard.
+- Encrypted MongoDB connections.
+- Strict validation on Socket.io events to prevent unauthorized bidding or room tampering.
+- Environment variables secure all AI and Database keys.
 
-## 📄 License
+🗄️ Database Schema
+ActiveRooms Collection
+{ _id: ObjectId, roomCode: String, league: String, currentBid: Number, highestBidder: String, ... }
 
-This project is licensed under the ISC License.
+Players Collection (Per League DB)
+{ _id: ObjectId, name: String, basePrice: Number, role: String, country: String, ... }
+
+Franchises Collection (Per League DB)
+{ _id: ObjectId, name: String, purseRemaining: Number, rtmCards: Number, squad: [PlayerId], ... }
+
+🚀 Deployment
+Frontend (Vercel)
+1. Import repository to Vercel.
+2. Set Build Command: `npm run build` and Output Directory: `dist`.
+3. Add `VITE_API_URL` to environment variables.
+4. Deploy! (Includes `vercel.json` for React Router support).
+
+Backend (Render)
+1. Create a New Web Service on Render.
+2. Root Directory: `server`, Build: `npm install`, Start: `npm start`.
+3. Add all required `.env` variables (MongoDB, Gemini, Groq, JWT).
+4. Note: Server includes a self-ping mechanism to stay awake on Render's free tier.
+
+🛣️ Roadmap
+- [ ] Add more international leagues (BBL, PSL).
+- [ ] Support for mega-auction retention rules (e.g., 6 retentions for IPL 2025).
+- [ ] Player statistics integration (fetching real live stats).
+- [ ] Voice bidding (bid using your microphone).
+
+🤝 Contributing
+We welcome contributions! 
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+
+👥 Team
+Built by cricket fans, for cricket fans.
+Sai Kumar - Creator & Lead Developer (GitHub: @sai-kumar-277)
+
+🙏 Acknowledgments
+- Google Gemini & Groq for making our AI evaluations insanely fast and accurate.
+- Socket.io for never dropping a bid.
+- The cricket community for inspiring this project.
+
+📞 Support
+Found a bug? Have a feature request?
+Issues: Open an issue on GitHub.
+⭐ Star this repo if PlayAuction brought the thrill of the mega auction to your living room! ⭐
