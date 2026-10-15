@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ==================== Brand Colors ==================== -->
+    <color name="brand_primary">#FF6B2C</color>         <!-- Vibrant Orange — CTAs, highlights -->
+    <color name="brand_primary_variant">#E55A1C</color> <!-- Darker orange for pressed state -->
+    <color name="brand_secondary">#FFD166</color>        <!-- Golden Yellow — bids, wins -->
+    <color name="brand_secondary_variant">#F0BE50</color>
+    <color name="brand_accent">#06D6A0</color>           <!-- Teal — success states -->
+    <color name="brand_accent_red">#EF233C</color>       <!-- Danger Red — outbid, errors -->
+
+    <!-- ==================== Dark Theme Backgrounds ==================== -->
+    <color name="bg_primary">#0D0D0D</color>            <!-- Near-black app background -->
+    <color name="bg_secondary">#161616</color>           <!-- Card / surface background -->
+    <color name="bg_tertiary">#1F1F1F</color>            <!-- Elevated surface / dialogs -->
+    <color name="bg_quaternary">#2A2A2A</color>          <!-- Input fields, chips -->
+    <color name="bg_overlay">#CC000000</color>           <!-- Semi-transparent overlay -->
+
+    <!-- ==================== Text Colors ==================== -->
+    <color name="text_primary">#FFFFFFFF</color>        <!-- Primary text — full white -->
+    <color name="text_secondary">#B3FFFFFF</color>      <!-- Secondary text — 70% white -->
+    <color name="text_tertiary">#66FFFFFF</color>        <!-- Hint / disabled text — 40% white -->
+    <color name="text_on_primary">#FFFFFFFF</color>     <!-- Text on primary color buttons -->
+    <color name="text_on_secondary">#FF000000</color>   <!-- Text on secondary (golden) buttons -->
+
+    <!-- ==================== Auction Room Colors ==================== -->
+    <color name="auction_live_red">#FF1744</color>       <!-- LIVE indicator -->
+    <color name="auction_timer_warning">#FF9800</color>  <!-- Timer < 10s warning -->
+    <color name="auction_timer_danger">#F44336</color>   <!-- Timer < 5s danger -->
+    <color name="auction_bid_up">#00E676</color>         <!-- Bid increase indicator -->
+    <color name="auction_my_bid">#40E0D0</color>         <!-- My current bid highlight -->
+    <color name="auction_sold_badge">#4CAF50</color>     <!-- SOLD badge -->
+    <color name="auction_unsold_badge">#9E9E9E</color>   <!-- UNSOLD badge -->
+    <color name="auction_outbid_badge">#F44336</color>   <!-- OUTBID badge -->
+
+    <!-- ==================== Status / Semantic Colors ==================== -->
+    <color name="status_success">#00C853</color>
+    <color name="status_error">#FF1744</color>
+    <color name="status_warning">#FFAB00</color>
+    <color name="status_info">#2979FF</color>
+    <color name="status_online">#69F0AE</color>
+    <color name="status_offline">#616161</color>
+
+    <!-- ==================== Surface & Dividers ==================== -->
+    <color name="surface_default">#161616</color>
+    <color name="surface_raised">#1F1F1F</color>
+    <color name="surface_overlay">#29FFFFFF</color>      <!-- 16% white overlay on dark -->
+    <color name="divider">#1AFFFFFF</color>              <!-- 10% white divider -->
+    <color name="border">#33FFFFFF</color>               <!-- 20% white border -->
+
+    <!-- ==================== Gradient Colors ==================== -->
+    <color name="gradient_start">#FF6B2C</color>         <!-- Orange gradient start -->
+    <color name="gradient_end">#FF1744</color>           <!-- Red gradient end -->
+    <color name="gold_gradient_start">#FFD700</color>
+    <color name="gold_gradient_end">#FFA500</color>
+
+    <!-- ==================== Notification ==================== -->
+    <color name="notification_color">#FF6B2C</color>
+
+    <!-- ==================== League Sport Accent Colors ==================== -->
+    <color name="sport_cricket">#4CAF50</color>
+    <color name="sport_football">#2196F3</color>
+    <color name="sport_kabaddi">#FF5722</color>
+    <color name="sport_basketball">#FF9800</color>
+
+    <!-- ==================== Misc ==================== -->
+    <color name="ripple_dark">#29FFFFFF</color>
+    <color name="scrim">#B3000000</color>
+    <color name="shimmer_base">#1AFFFFFF</color>
+    <color name="shimmer_highlight">#40FFFFFF</color>
+</resources>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ==================== App Identity ==================== -->
+    <string name="app_name">PlayAuction</string>
+    <string name="app_tagline">Bid. Win. Rule the League.</string>
+    <string name="app_version_prefix">Version</string>
+
+    <!-- ==================== Auth Screens ==================== -->
+    <string name="login_title">Welcome Back</string>
+    <string name="login_subtitle">Sign in to continue to PlayAuction</string>
+    <string name="register_title">Create Account</string>
+    <string name="register_subtitle">Join millions of auction enthusiasts</string>
+    <string name="email_label">Email Address</string>
+    <string name="password_label">Password</string>
+    <string name="confirm_password_label">Confirm Password</string>
+    <string name="username_label">Username</string>
+    <string name="full_name_label">Full Name</string>
+    <string name="btn_login">Sign In</string>
+    <string name="btn_register">Create Account</string>
+    <string name="btn_forgot_password">Forgot Password?</string>
+    <string name="btn_google_signin">Continue with Google</string>
+    <string name="already_have_account">Already have an account? </string>
+    <string name="dont_have_account">Don\'t have an account? </string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+
+    <!-- ==================== Dashboard ==================== -->
+    <string name="nav_home">Home</string>
+    <string name="nav_leagues">Leagues</string>
+    <string name="nav_auction">Auction</string>
+    <string name="nav_wallet">Wallet</string>
+    <string name="nav_profile">Profile</string>
+    <string name="dashboard_title">Dashboard</string>
+    <string name="active_leagues">Active Leagues</string>
+    <string name="upcoming_auctions">Upcoming Auctions</string>
+    <string name="my_squad">My Squad</string>
+    <string name="live_now">LIVE NOW</string>
+    <string name="join_auction">Join Auction</string>
+
+    <!-- ==================== Auction Room ==================== -->
+    <string name="auction_room_title">Auction Room</string>
+    <string name="current_player">Current Player</string>
+    <string name="current_bid">Current Bid</string>
+    <string name="place_bid">Place Bid</string>
+    <string name="raise_bid">Raise Bid</string>
+    <string name="pass_player">Pass</string>
+    <string name="bid_amount_hint">Enter bid amount</string>
+    <string name="sold_to">SOLD to %s</string>
+    <string name="unsold">UNSOLD</string>
+    <string name="timer_label">Time Left</string>
+    <string name="participants_label">Participants</string>
+    <string name="purse_remaining">Purse: ₹%s</string>
+    <string name="slots_remaining">Slots: %d remaining</string>
+    <string name="bid_history">Bid History</string>
+    <string name="auction_paused">Auction Paused</string>
+    <string name="auction_ended">Auction Ended</string>
+    <string name="waiting_for_players">Waiting for players…</string>
+
+    <!-- ==================== League ==================== -->
+    <string name="leagues_title">Leagues</string>
+    <string name="create_league">Create League</string>
+    <string name="join_league">Join League</string>
+    <string name="league_name_label">League Name</string>
+    <string name="league_type_label">League Type</string>
+    <string name="league_cricket">Cricket</string>
+    <string name="league_football">Football</string>
+    <string name="league_kabaddi">Kabaddi</string>
+    <string name="league_basketball">Basketball</string>
+    <string name="max_teams_label">Max Teams</string>
+    <string name="budget_per_team_label">Budget Per Team</string>
+    <string name="league_invite_code">Invite Code</string>
+    <string name="copy_invite_code">Copy Code</string>
+    <string name="invite_code_copied">Invite code copied!</string>
+    <string name="no_leagues_found">No leagues found. Create or join one!</string>
+
+    <!-- ==================== Wallet ==================== -->
+    <string name="wallet_title">Wallet</string>
+    <string name="wallet_balance">Available Balance</string>
+    <string name="add_funds">Add Funds</string>
+    <string name="withdraw">Withdraw</string>
+    <string name="transaction_history">Transaction History</string>
+    <string name="no_transactions">No transactions yet</string>
+    <string name="transaction_credit">Credit</string>
+    <string name="transaction_debit">Debit</string>
+
+    <!-- ==================== Profile ==================== -->
+    <string name="profile_title">Profile</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="settings_title">Settings</string>
+    <string name="logout">Logout</string>
+    <string name="logout_confirm">Are you sure you want to logout?</string>
+    <string name="notifications_label">Notifications</string>
+    <string name="dark_mode_label">Dark Mode</string>
+    <string name="sound_effects_label">Sound Effects</string>
+    <string name="vibration_label">Vibration</string>
+
+    <!-- ==================== Common / Generic ==================== -->
+    <string name="btn_continue">Continue</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_confirm">Confirm</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_back">Back</string>
+    <string name="btn_retry">Retry</string>
+    <string name="btn_close">Close</string>
+    <string name="loading">Loading…</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_network">No internet connection. Check your network and retry.</string>
+    <string name="error_timeout">Request timed out. Please retry.</string>
+    <string name="error_unauthorized">Session expired. Please sign in again.</string>
+    <string name="success">Success</string>
+    <string name="required_field">This field is required</string>
+    <string name="invalid_email">Please enter a valid email address</string>
+    <string name="password_too_short">Password must be at least 8 characters</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+
+    <!-- ==================== Notifications ==================== -->
+    <string name="default_notification_channel_id">playauction_general</string>
+    <string name="notification_channel_auction">Auction Alerts</string>
+    <string name="notification_channel_general">General</string>
+    <string name="notification_channel_wallet">Wallet Updates</string>
+
+    <!-- ==================== Content Descriptions (Accessibility) ==================== -->
+    <string name="cd_player_photo">Player photo</string>
+    <string name="cd_team_logo">Team logo</string>
+    <string name="cd_back_button">Navigate back</string>
+    <string name="cd_close_button">Close dialog</string>
+    <string name="cd_notification_icon">Notification icon</string>
+    <string name="cd_profile_picture">Profile picture</string>
+</resources>

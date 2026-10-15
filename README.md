@@ -26,37 +26,37 @@ The problems we solved:
 ## 🏗️ System Architecture
 
 ```text
-┌─────────────────────────────────────────────────────────────────┐
-│                         CLIENT SIDE                              │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │  React Frontend (Vite + TailwindCSS)                      │   │
-│  │  ┌────────────┐  ┌────────────┐  ┌─────────────────┐     │   │
-│  │  │  Auction   │  │   Squad    │  │     Admin       │     │   │
-│  │  │   Arena    │  │ Evaluation │  │   Dashboard     │     │   │
-│  │  └────────────┘  └────────────┘  └─────────────────┘     │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │ HTTPS/REST API & Socket.io
-┌───────────────────────────▼─────────────────────────────────────┐
-│                        SERVER SIDE                               │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │  Express.js Backend                                       │   │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────┐  │   │
-│  │  │ Socket.io│  │ Auction  │  │  Auth &  │  │   AI    │  │   │
-│  │  │  Engine  │  │  Routes  │  │  Admin   │  │ Services│  │   │
-│  │  └──────────┘  └──────────┘  └──────────┘  └─────────┘  │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└───────────┬────────────────────┬────────────────────────────────┘
-            │                    │
-            ▼                    ▼
-┌───────────────────┐  ┌─────────────────────────┐
-│   MongoDB Atlas   │  │  Google Gemini / Groq   │
-│  ┌─────────────┐  │  │  ┌──────────────────┐  │
-│  │ ipl Database│  │  │  │  Squad Analysis  │  │
-│  │ wpl Database│  │  │  │  Quiz Generation │  │
-│  │sa20 Database│  │  │  └──────────────────┘  │
-│  └─────────────┘  │  └─────────────────────────┘
-└───────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                CLIENT PLATFORMS                                 │
+│  ┌──────────────────────────────────────┐  ┌─────────────────────────────────┐  │
+│  │  Native Android App (Jetpack Compose)│  │  React Web Client (Vite + TW)   │  │
+│  │  ┌────────────┐  ┌─────────────────┐ │  │  ┌────────────┐ ┌─────────────┐  │  │
+│  │  │ Bidding    │  │ AI Evaluation & │ │  │  │ Auction    │ │ Squad       │  │  │
+│  │  │ Podium     │  │ Trivia Arena    │ │  │  │ Arena      │ │ Evaluation  │  │  │
+│  │  └────────────┘  └─────────────────┘ │  │  └────────────┘ └─────────────┘  │  │
+│  └──────────────────────────────────────┘  └─────────────────────────────────┘  │
+└────────────────────────────────────────┬────────────────────────────────────────┘
+                                         │ HTTPS/REST API & WebSockets (Socket.io)
+┌────────────────────────────────────────▼────────────────────────────────────────┐
+│                                   SERVER SIDE                                   │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │  Express.js Backend                                                        │  │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────────────────────┐  │  │
+│  │  │ Socket.io│  │ Auction  │  │  Auth &  │  │   AI Services             │  │  │
+│  │  │  Engine  │  │  Routes  │  │  Admin   │  │ (Gemini 2.5 Flash / Groq) │  │  │
+│  │  └──────────┘  └──────────┘  └──────────┘  └───────────────────────────┘  │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+└───────────────────────────┬─────────────────────────────────┬───────────────────┘
+                            │                                 │
+                            ▼                                 ▼
+                ┌───────────────────┐             ┌─────────────────────────┐
+                │   MongoDB Atlas   │             │  Google Gemini / Groq   │
+                │  ┌─────────────┐  │             │  ┌──────────────────┐   │
+                │  │ ipl Database│  │             │  │  Squad Analysis  │   │
+                │  │ wpl Database│  │             │  │  Quiz Generation │   │
+                │  │sa20 Database│  │             │  └──────────────────┘   │
+                │  └─────────────┘  │             └─────────────────────────┘
+                └───────────────────┘
 ```
 
 ---
@@ -295,6 +295,72 @@ PLAYAUCTION/
 2. **Service Settings**: Root: `server`, Build: `npm install`, Start: `npm start`
 3. **Environment Variables**: Add MongoDB, Gemini, Groq, and JWT secrets
 4. *Note:* Server includes a self-ping mechanism to stay awake on Render's free tier.
+
+---
+
+## 📱 Native Android Application (`android/`)
+
+An exact, 1-to-1 native Android mobile application engineered for high-concurrency real-time bidding, low-latency delta state updates, and buttery-smooth Material3 Compose UI animations.
+
+### 🏛️ Mobile Architecture
+- **Language**: 100% Kotlin (v2.0.20)
+- **UI Framework**: Jetpack Compose (Material3) with declarative state & Framer Motion-style physics springs
+- **Architecture**: Clean MVVM + Unidirectional Data Flow (UDF) powered by `StateFlow` and `SharedFlow`
+- **Asynchronous Execution**: Kotlin Coroutines & Flow (`Dispatchers.IO` / `Dispatchers.Default`)
+- **Real-Time Engine**: `io.socket:socket.io-client:2.1.0` with exponential backoff (1s → 30s ceiling), automatic ping/pong heartbeats, and sub-100ms delta-state parsing
+- **REST Client**: Retrofit 2 + Gson with token auto-injection & JWT expiration verification
+- **Persistence**: Room Database + DataStore Preferences for offline recovery and session caching
+- **Media & Audio**: Native AudioTrack synthesizer generating zero-latency WebAudio-style frequency sweep tones, gavel impacts, and haptic feedback
+- **Dependency Injection**: Google Hilt 2.52 (`@AndroidEntryPoint`, `@HiltViewModel`)
+- **Dependency Catalog**: Modern Gradle Version Catalogs (`libs.versions.toml`)
+
+### 📦 Package Architecture
+```text
+android/app/src/main/kotlin/com/playauction/app/
+├── data/
+│   ├── local/          # SessionDataStore (JWT/userId) & Room AppDatabase
+│   ├── model/          # League, Team, Player, CurrentBid, Quiz, Retention models
+│   ├── network/        # Retrofit ApiService & Hilt NetworkModule
+│   ├── repository/     # SessionRepository with idempotent init & JWT decode
+│   └── socket/         # SocketManager singleton with 46 incoming & 29 outgoing events
+├── di/                 # Dependency injection modules
+├── domain/             # BidRulesEngine (snap & increments) & CurrencyFormatter (Cr/Lakh/M/K)
+├── ui/
+│   ├── components/     # AuctionTimer, PlayerCard, BidControls, LiveChatSection, GavelSlamOverlay
+│   ├── navigation/     # AppNavGraph & Route Definitions
+│   ├── screen/
+│   │   ├── auth/       # AuthScreen (Name input, League selector, 6-digit room code, public rooms)
+│   │   ├── lobby/      # LobbyScreen (Franchise claims, pre-auction retentions, host controls)
+│   │   ├── auction/    # AuctionScreen (Real-time bidding arena, RTM decision modal, pause/skip)
+│   │   ├── quiz/       # QuizArenaScreen (10-question cricket trivia showdown & leaderboard)
+│   │   ├── evaluation/ # EvaluationScreen (Gemini 2.5 Flash 90s countdown lobby)
+│   │   └── results/    # ResultsScreen (AI squad ratings, Playing XI recommendations, quiz podium)
+│   ├── theme/          # Color, Theme, Type
+│   └── viewmodel/      # SessionViewModel, LobbyViewModel, AuctionViewModel, QuizViewModel, ResultsViewModel
+└── util/               # SoundManager (AudioTrack synthesizer) & HapticManager (VibrationEffect)
+```
+
+### 🚀 Building & Running the Android App
+
+#### Prerequisites
+- Android Studio Ladybug (2024.2.1+) or newer
+- JDK 17 or JDK 21
+- Android SDK 35 (compileSdk = 35, minSdk = 26)
+
+#### Build Commands
+```bash
+# Navigate to the Android directory
+cd android
+
+# Build the Debug APK
+./gradlew assembleDebug
+
+# Run Unit Tests (BidRules, CurrencyFormatter, WebSocket parsing)
+./gradlew testDebugUnitTest
+
+# Install on a connected device / emulator
+./gradlew installDebug
+```
 
 ---
 
