@@ -123,9 +123,10 @@ class PlayerCache {
             await this._loadFromUri(mongoUri, false);
         }
 
-        // If primary database had 0 players, load from fallback registry
-        if (this.playersMap.size === 0) {
-            this.log('[PlayerCache] Primary database has 0 player records. Loading from reference database...');
+        // If primary database had fewer than 50 players (e.g. fresh or only 1 test player),
+        // load the complete authentic roster from the reference database
+        if (this.playersMap.size < 50) {
+            this.log(`[PlayerCache] Primary database has only ${this.playersMap.size} player(s). Loading complete roster from reference database...`);
             await this._loadFromUri(fallbackUri, true);
 
             // Auto-seed the user's primary database if connected so it's permanently populated
@@ -137,8 +138,9 @@ class PlayerCache {
                     });
                     await userConn.asPromise();
                     const iplDataCount = await userConn.db.collection('ipl_data').countDocuments();
-                    if (iplDataCount === 0) {
+                    if (iplDataCount <= 1) {
                         this.log('[PlayerCache] Auto-seeding user database ipl_data collection with authentic players...');
+                        try { await userConn.db.collection('ipl_data').deleteMany({}); } catch (_) {}
                         const allDocs = Array.from(this.playersMap.values()).map((p, idx) => ({ ...p, playerId: p.playerId || String(p._id) || ('PLY_' + idx) }));
                         if (allDocs.length > 0) {
                             await userConn.db.collection('ipl_data').insertMany(allDocs);
