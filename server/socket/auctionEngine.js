@@ -131,16 +131,23 @@ async function fetchAllPlayers(league = 'ipl') {
  */
 async function findPlayerById(playerId, league = 'ipl') {
     if (!playerId) return null;
+    const PlayerCache = require('../utils/PlayerCache');
+    if (PlayerCache.isLoaded) {
+        const cached = PlayerCache.getPlayer(String(playerId));
+        if (cached) return cached;
+    }
     const { ObjectId } = require('mongoose').Types;
     let oid;
     try { oid = new ObjectId(String(playerId)); } catch { return null; }
 
     const collections = getCollectionsForLeague(league);
     for (const collName of collections) {
-        const dbName = league === 'sa20' ? 'SA20' : league;
-        const db = mongoose.connection.client.db(dbName);
-        const doc = await db.collection(collName).findOne({ _id: oid });
-        if (doc) return doc;
+        try {
+            const dbName = league === 'sa20' ? 'SA20' : league;
+            const db = mongoose.connection.client.db(dbName);
+            const doc = await db.collection(collName).findOne({ _id: oid });
+            if (doc) return doc;
+        } catch (_) {}
     }
     return null;
 }
