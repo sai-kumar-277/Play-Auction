@@ -59,7 +59,7 @@ class QuizViewModel @Inject constructor(
         }
         viewModelScope.launch {
             socketManager.onQuizQuestion.collect { q ->
-                _state.update { it.copy(currentQuestion = q, selectedAnswer = null, resultData = null, revealData = null, questionTimer = q.timeLimit) }
+                _state.update { it.copy(phase = QuizPhase.ACTIVE, currentQuestion = q, selectedAnswer = null, resultData = null, revealData = null, questionTimer = q.timeLimit) }
             }
         }
         viewModelScope.launch {

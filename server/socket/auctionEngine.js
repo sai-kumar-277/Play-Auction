@@ -1072,7 +1072,11 @@ async function runTeamAiEvaluation(state) {
 async function runQuizPhase(roomCode, io, state) {
     const QUESTION_DURATION = 12;
     const REVEAL_PAUSE = 2;
-    const questions = state.quiz.questions;
+    const questions = state.quiz?.questions || [];
+    if (questions.length === 0) return;
+
+    // 3-second grace period for clients to navigate to the quiz screen
+    await new Promise((r) => setTimeout(r, 3000));
 
     const getExpectedQuizResponders = () => {
         const responderIds = new Set();

@@ -39,6 +39,7 @@ const QuizArena = () => {
         };
 
         const onQuestion = (q) => {
+            setPhase('active');
             setCurrentQuestion(q);
             setSelectedAnswer(null);
             setResultData(null);
@@ -46,7 +47,10 @@ const QuizArena = () => {
             setQuestionTimer(q.timeLimit || 12);
         };
 
-        const onTimerTick = ({ remaining }) => setQuestionTimer(remaining);
+        const onTimerTick = ({ remaining, totalQuestions: total }) => {
+            setQuestionTimer(remaining);
+            if (total) setTotalQuestions(total);
+        };
 
         const onLeaderboard = ({ leaderboard: lb }) => {
             if (Array.isArray(lb)) setLeaderboard(lb);
@@ -168,7 +172,7 @@ const QuizArena = () => {
                     {/* Main card */}
                     <div className="lg:col-span-8 flex flex-col min-h-[420px]">
                         <AnimatePresence mode="wait">
-                            {phase === 'intro' && (
+                            {(!currentQuestion && !revealData && phase !== 'finished') && (
                                 <motion.div
                                     key="intro"
                                     initial={{ opacity: 0, y: 20 }}
@@ -188,7 +192,7 @@ const QuizArena = () => {
                                 </motion.div>
                             )}
 
-                            {phase === 'active' && currentQuestion && (
+                            {currentQuestion && (
                                 <motion.div
                                     key={`q-${currentQuestion.quizIndex}`}
                                     initial={{ opacity: 0, x: 30 }}
@@ -257,7 +261,7 @@ const QuizArena = () => {
                                 </motion.div>
                             )}
 
-                            {phase === 'active' && !currentQuestion && revealData && (
+                            {!currentQuestion && revealData && phase !== 'finished' && (
                                 <motion.div
                                     key="reveal"
                                     initial={{ opacity: 0, scale: 0.95 }}
