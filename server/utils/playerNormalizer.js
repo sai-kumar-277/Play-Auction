@@ -20,7 +20,8 @@ const getCollectionsForLeague = (league) => {
     const l = String(league).toLowerCase();
     if (l === 'sa20') {
         return [
-            'MEGA',
+            'sa20_data',
+        'MEGA',
             'ELITE',
             'DAIMOND',
             'GOLD',
@@ -30,7 +31,8 @@ const getCollectionsForLeague = (league) => {
     }
     if (l === 'wpl') {
         return [
-            'marquee',
+            'wpl_data',
+        'marquee',
             'batters',
             'wicketkeepers',
             'bowlers',
@@ -40,6 +42,7 @@ const getCollectionsForLeague = (league) => {
     }
     // Default to IPL collections
     return [
+        'ipl_data',
         'marquee_batters',
         'marquee_bowlers',
         'marquee_allrounders',
@@ -160,8 +163,8 @@ const normalizePlayer = (p, collName) => {
         role,
         nationality,
         isOverseas,
-        poolName: collName.replace(/_/g, ' ').toUpperCase(),
-        poolID: collName,
+        poolName: p.poolName || p.pool || collName.replace(/_/g, ' ').toUpperCase(),
+        poolID: p.poolID || p.poolId || collName,
         basePrice: bp,
         imagepath: cleanImgUrl,
         image_path: cleanImgUrl,

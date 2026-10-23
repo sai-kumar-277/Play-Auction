@@ -10,6 +10,7 @@
 const mongoose = require('mongoose');
 
 const COLLECTIONS = [
+    'ipl_data',
     'marquee_batters',
     'marquee_bowlers',
     'marquee_allrounders',
