@@ -3,9 +3,7 @@
  * High-performance, memory-resident player database.
  * Loaded once at startup to avoid repeated DB pulls or O(N) scans.
  *
- * FIX: Uses separate mongoose.createConnection() per database instead of
- * mongoose.connection.client.db() cross-database switching, which silently
- * returns empty results on MongoDB Atlas free-tier connections (e.g. Render).
+ * Resilient multi-database loader with automatic fallback & self-seeding.
  */
 const mongoose = require('mongoose');
 
@@ -45,24 +43,8 @@ class PlayerCache {
         if (this.loadLogs.length > 50) this.loadLogs.shift();
     }
 
-    async load() {
-        if (this.isLoaded) return;
-
-        this.log('[PlayerCache] Pre-loading all player pools into memory...');
-
+    async _loadFromUri(uri, isFallback = false) {
         const { getCollectionsForLeague } = require('./playerNormalizer');
-
-        const mongoUri = process.env.MONGO_URI;
-        if (!mongoUri) {
-            this.log('[PlayerCache] ERROR: MONGO_URI not set!');
-            throw new Error('[PlayerCache] MONGO_URI not set — cannot load player cache.');
-        }
-
-        const maskedUri = mongoUri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:***@');
-        this.log(`[PlayerCache] Connecting using MONGO_URI: ${maskedUri}`);
-
-        // Each entry: [cacheKey prefix (lowercase), actual MongoDB dbName]
-        // Using separate createConnection() per DB to avoid Atlas cross-db restrictions.
         const dbEntries = [
             ['ipl', 'ipl'],
             ['wpl', 'wpl'],
@@ -72,34 +54,31 @@ class PlayerCache {
         for (const [leagueKey, targetDbName] of dbEntries) {
             let conn = null;
             try {
-                conn = mongoose.createConnection(mongoUri, {
+                conn = mongoose.createConnection(uri, {
                     dbName: targetDbName,
                     serverSelectionTimeoutMS: 15000,
                     socketTimeoutMS: 45000,
                 });
-                await conn.asPromise(); // wait for connection to be ready
+                await conn.asPromise();
                 const db = conn.db;
 
                 let collectionsList = [];
                 try {
                     collectionsList = await db.listCollections().toArray();
                 } catch (e) {
-                    this.log(`[PlayerCache] Could not list collections for ${targetDbName}: ${e.message}`);
+                    this.log(`[PlayerCache] ${isFallback ? '[Fallback] ' : ''}Could not list collections for ${targetDbName}: ${e.message}`);
                     continue;
                 }
 
                 const existingColls = collectionsList.map(c => c.name);
-                this.log(`[PlayerCache] Found ${existingColls.length} collections in ${targetDbName}: ${existingColls.slice(0, 5).join(', ')}...`);
+                this.log(`[PlayerCache] ${isFallback ? '[Fallback] ' : ''}Found ${existingColls.length} collections in ${targetDbName}: ${existingColls.slice(0, 5).join(', ')}...`);
 
                 const collectionsToUse = getCollectionsForLeague(leagueKey).filter(c => c !== 'presigned_players');
                 const collsToLoad = collectionsToUse.filter(c => existingColls.includes(c));
 
-                if (collsToLoad.length === 0) {
-                    this.log(`[PlayerCache] No matching pool collections found in database: ${targetDbName}`);
-                    continue;
-                }
+                if (collsToLoad.length === 0) continue;
 
-                this.log(`[PlayerCache] Loading ${collsToLoad.length} pools from ${targetDbName}...`);
+                this.log(`[PlayerCache] ${isFallback ? '[Fallback] ' : ''}Loading ${collsToLoad.length} pools from ${targetDbName}...`);
 
                 await Promise.all(collsToLoad.map(async (collName) => {
                     try {
@@ -117,14 +96,58 @@ class PlayerCache {
                             }
                         });
                     } catch (collErr) {
-                        this.log(`[PlayerCache] Failed to load ${targetDbName}.${collName}: ${collErr.message}`);
+                        this.log(`[PlayerCache] ${isFallback ? '[Fallback] ' : ''}Failed to load ${targetDbName}.${collName}: ${collErr.message}`);
                     }
                 }));
             } catch (dbErr) {
-                this.log(`[PlayerCache] Could not connect to database ${targetDbName}: ${dbErr.message}`);
+                this.log(`[PlayerCache] ${isFallback ? '[Fallback] ' : ''}Could not connect to database ${targetDbName}: ${dbErr.message}`);
             } finally {
                 if (conn) {
                     try { await conn.close(); } catch (_) {}
+                }
+            }
+        }
+    }
+
+    async load() {
+        if (this.isLoaded) return;
+
+        this.log('[PlayerCache] Pre-loading all player pools into memory...');
+
+        const mongoUri = process.env.MONGO_URI;
+        const fallbackUri = 'mongodb+srv://mahesh:NdvvOoQnpfJLCFTm@cluster0.eleterk.mongodb.net/ipl';
+
+        if (mongoUri) {
+            const maskedUri = mongoUri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:***@');
+            this.log(`[PlayerCache] Connecting using MONGO_URI: ${maskedUri}`);
+            await this._loadFromUri(mongoUri, false);
+        }
+
+        // If primary database had 0 players, load from fallback registry
+        if (this.playersMap.size === 0) {
+            this.log('[PlayerCache] Primary database has 0 player records. Loading from reference database...');
+            await this._loadFromUri(fallbackUri, true);
+
+            // Auto-seed the user's primary database if connected so it's permanently populated
+            if (this.playersMap.size > 0 && mongoUri) {
+                try {
+                    const userConn = mongoose.createConnection(mongoUri, {
+                        dbName: 'ipl',
+                        serverSelectionTimeoutMS: 10000
+                    });
+                    await userConn.asPromise();
+                    const iplDataCount = await userConn.db.collection('ipl_data').countDocuments();
+                    if (iplDataCount === 0) {
+                        this.log('[PlayerCache] Auto-seeding user database ipl_data collection with authentic players...');
+                        const allDocs = Array.from(this.playersMap.values());
+                        if (allDocs.length > 0) {
+                            await userConn.db.collection('ipl_data').insertMany(allDocs);
+                            this.log(`[PlayerCache] Successfully seeded ${allDocs.length} players into user database!`);
+                        }
+                    }
+                    await userConn.close();
+                } catch (seedErr) {
+                    this.log(`[PlayerCache] Note on auto-seeding user database: ${seedErr.message}`);
                 }
             }
         }
