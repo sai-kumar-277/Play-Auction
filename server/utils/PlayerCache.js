@@ -139,7 +139,7 @@ class PlayerCache {
                     const iplDataCount = await userConn.db.collection('ipl_data').countDocuments();
                     if (iplDataCount === 0) {
                         this.log('[PlayerCache] Auto-seeding user database ipl_data collection with authentic players...');
-                        const allDocs = Array.from(this.playersMap.values());
+                        const allDocs = Array.from(this.playersMap.values()).map((p, idx) => ({ ...p, playerId: p.playerId || String(p._id) || ('PLY_' + idx) }));
                         if (allDocs.length > 0) {
                             await userConn.db.collection('ipl_data').insertMany(allDocs);
                             this.log(`[PlayerCache] Successfully seeded ${allDocs.length} players into user database!`);
