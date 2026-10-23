@@ -90,7 +90,21 @@ const QuizArena = () => {
 
     useEffect(() => {
         if (!socket || !roomCode) return;
-        const rejoin = () => socket.emit('join_room', { roomCode });
+
+        const syncQuiz = () => {
+            console.log('[QuizArena] Requesting quiz sync for room', roomCode);
+            socket.emit('request_quiz_sync', { roomCode });
+        };
+
+        // Re-join the socket.io room first, then actively request the current quiz state.
+        // This handles cases where quiz_phase_started or quiz_question fired before this
+        // component mounted its listeners (timing / slow navigation race condition).
+        const rejoin = () => {
+            socket.emit('join_room', { roomCode });
+            // Short delay so the server processes join_room before we request sync
+            setTimeout(syncQuiz, 400);
+        };
+
         if (socket.connected) rejoin();
         else socket.on('connect', rejoin);
         return () => socket.off('connect', rejoin);

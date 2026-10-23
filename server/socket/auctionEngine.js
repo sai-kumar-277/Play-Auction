@@ -66,6 +66,22 @@ async function fetchAllPlayers(league = 'ipl') {
                     if (player) allPlayers.push(Object.assign({}, player));
                 }
             }
+            // Flat-cache fallback: if per-collection pools returned 0 players (e.g. when all
+            // players are stored in a single ipl_data collection instead of the multi-pool schema),
+            // return every player in the cache whose league field matches.
+            if (allPlayers.length === 0) {
+                const normalizedLeagueCheck = league.toLowerCase();
+                PlayerCache.playersMap.forEach((player) => {
+                    const pLeague = (player.league || '').toLowerCase();
+                    if (pLeague === normalizedLeagueCheck || (normalizedLeagueCheck === 'ipl' && !pLeague)) {
+                        allPlayers.push(Object.assign({}, player));
+                    }
+                });
+                if (allPlayers.length > 0) {
+                    console.log('[DATA] fetchAllPlayers flat-cache fallback: returned ' + allPlayers.length + ' players for ' + league.toUpperCase());
+                }
+            }
+
             if (allPlayers.length > 0) {
                 for (let i = allPlayers.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -1075,8 +1091,8 @@ async function runQuizPhase(roomCode, io, state) {
     const questions = state.quiz?.questions || [];
     if (questions.length === 0) return;
 
-    // 3-second grace period for clients to navigate to the quiz screen
-    await new Promise((r) => setTimeout(r, 3000));
+    // 5-second grace period for clients to navigate to the quiz screen and mount socket listeners
+    await new Promise((r) => setTimeout(r, 5000));
 
     const getExpectedQuizResponders = () => {
         const responderIds = new Set();
@@ -2257,6 +2273,36 @@ const setupSocketHandlers = (io) => {
                 socket.emit('new_player', { player, nextPlayers, timer: state.timer });
                 socket.emit('bid_placed', { currentBid: state.currentBid, timer: state.timer });
             }
+        });
+
+        // --- QUIZ SYNC --- allows QuizArena to pull current question state on mount
+        socket.on('request_quiz_sync', ({ roomCode }) => {
+            const state = roomStates[roomCode];
+            if (!state || state.status !== 'Quiz' || !state.quiz?.active) return;
+
+            // Always send current phase metadata
+            socket.emit('quiz_phase_started', {
+                roomCode,
+                league: state.league || 'ipl',
+                totalQuestions: state.quiz.questions?.length || 10,
+            });
+
+            // If a question is currently active, resend it with remaining time
+            const idx = state.quiz.currentQuestionIndex;
+            if (idx >= 0 && state.quiz.questions[idx] && !state.quiz.questionClosed) {
+                const QUESTION_DURATION = 12;
+                const elapsed = Math.floor((Date.now() - (state.quiz.questionStartedAt || Date.now())) / 1000);
+                const remaining = Math.max(1, QUESTION_DURATION - elapsed);
+                const q = state.quiz.questions[idx];
+                socket.emit('quiz_question', {
+                    ...getSafeQuizQuestion(q, idx, state.quiz.questions.length, QUESTION_DURATION),
+                    timeLimit: remaining,
+                });
+                console.log('[QUIZ SYNC] Sent Q' + (idx + 1) + ' to ' + socket.id + ' with ' + remaining + 's remaining');
+            }
+
+            // Always send current leaderboard
+            socket.emit('quiz_leaderboard_update', { leaderboard: buildQuizLeaderboard(state.quiz.scores) });
         });
 
         // --- QUIZ HANDLER ---
