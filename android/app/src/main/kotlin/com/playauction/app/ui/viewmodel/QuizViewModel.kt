@@ -3,6 +3,7 @@ package com.playauction.app.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.playauction.app.data.model.*
+import com.playauction.app.data.socket.*
 import com.playauction.app.data.socket.SocketManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -26,12 +27,6 @@ data class QuizUiState(
     val questionTimer: Int = 12,
     val finalLeaderboard: List<QuizLeaderboardEntry> = emptyList(),
     val countdownToEval: Int = 5
-)
-
-data class QuizQuestionClosed(
-    val quizIndex: Int = 0,
-    val correctIndex: Int = 0,
-    val correctAnswer: String = ""
 )
 
 sealed class QuizEvent {

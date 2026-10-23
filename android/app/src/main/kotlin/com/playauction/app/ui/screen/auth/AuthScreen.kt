@@ -1,5 +1,6 @@
 package com.playauction.app.ui.screen.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -24,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import com.playauction.app.data.model.League
 import com.playauction.app.ui.theme.*
 import com.playauction.app.ui.viewmodel.LobbyViewModel
+import com.playauction.app.ui.viewmodel.SessionEvent
+import com.playauction.app.ui.viewmodel.SessionUiState
 import com.playauction.app.ui.viewmodel.SessionViewModel
 
 @Composable
@@ -36,9 +40,11 @@ fun AuthScreen(
     var nameInput by remember { mutableStateOf("") }
     var roomCodeInput by remember { mutableStateOf("") }
     var selectedLeague by remember { mutableStateOf(League.IPL) }
-    var serverUrl by remember { mutableStateOf("https://playauction.onrender.com/") }
+    var serverUrl by remember { mutableStateOf(com.playauction.app.BuildConfig.BASE_URL) }
     var showServerDialog by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
+    val sessionState by sessionViewModel.uiState.collectAsState()
     val savedName by sessionViewModel.playerNameFlow.collectAsState(initial = "")
     LaunchedEffect(savedName) {
         if (!savedName.isNullOrBlank() && nameInput.isBlank()) {
@@ -47,6 +53,25 @@ fun AuthScreen(
     }
 
     val lobbyState by lobbyViewModel.state.collectAsState()
+
+    // Navigate to lobby once server creates or joins the room
+    LaunchedEffect(lobbyState.isJoined) {
+        if (lobbyState.isJoined) {
+            onNavigateToLobby()
+        }
+    }
+
+    // Surface session and network errors
+    LaunchedEffect(Unit) {
+        sessionViewModel.events.collect { evt ->
+            when (evt) {
+                is SessionEvent.ShowError -> {
+                    Toast.makeText(context, "Network Error: ${evt.message}", Toast.LENGTH_LONG).show()
+                }
+                else -> {}
+            }
+        }
+    }
 
     // Fetch public rooms on open
     LaunchedEffect(Unit) {
@@ -192,6 +217,8 @@ fun AuthScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                val isConnecting = lobbyState.isLoading || sessionState is SessionUiState.Loading
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -200,12 +227,12 @@ fun AuthScreen(
                     Button(
                         onClick = {
                             if (nameInput.isNotBlank() && roomCodeInput.isNotBlank()) {
-                                sessionViewModel.initSession(nameInput.trim(), serverUrl)
-                                lobbyViewModel.joinRoom(roomCodeInput.trim())
-                                onNavigateToLobby()
+                                sessionViewModel.initSession(nameInput.trim(), serverUrl) {
+                                    lobbyViewModel.joinRoom(roomCodeInput.trim())
+                                }
                             }
                         },
-                        enabled = nameInput.isNotBlank() && roomCodeInput.isNotBlank(),
+                        enabled = nameInput.isNotBlank() && roomCodeInput.isNotBlank() && !isConnecting,
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = CyanSa20),
                         modifier = Modifier
@@ -219,12 +246,12 @@ fun AuthScreen(
                     OutlinedButton(
                         onClick = {
                             if (nameInput.isNotBlank() && roomCodeInput.isNotBlank()) {
-                                sessionViewModel.initSession(nameInput.trim(), serverUrl)
-                                lobbyViewModel.joinRoom(roomCodeInput.trim(), asSpectator = true)
-                                onNavigateToLobby()
+                                sessionViewModel.initSession(nameInput.trim(), serverUrl) {
+                                    lobbyViewModel.joinRoom(roomCodeInput.trim(), asSpectator = true)
+                                }
                             }
                         },
-                        enabled = nameInput.isNotBlank() && roomCodeInput.isNotBlank(),
+                        enabled = nameInput.isNotBlank() && roomCodeInput.isNotBlank() && !isConnecting,
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .weight(1f)
@@ -252,27 +279,42 @@ fun AuthScreen(
                 Button(
                     onClick = {
                         if (nameInput.isNotBlank()) {
-                            sessionViewModel.initSession(nameInput.trim(), serverUrl)
-                            lobbyViewModel.setSelectedLeague(selectedLeague.id)
-                            lobbyViewModel.createRoom()
-                            onNavigateToLobby()
+                            sessionViewModel.initSession(nameInput.trim(), serverUrl) {
+                                lobbyViewModel.setSelectedLeague(selectedLeague.id)
+                                lobbyViewModel.createRoom()
+                            }
                         }
                     },
-                    enabled = nameInput.isNotBlank(),
+                    enabled = nameInput.isNotBlank() && !isConnecting,
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = GoldPrimary),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null, tint = DarkBackground)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Create ${selectedLeague.label} Room",
-                        color = DarkBackground,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 15.sp
-                    )
+                    if (isConnecting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(22.dp),
+                            color = DarkBackground,
+                            strokeWidth = 2.5.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Connecting to arena...",
+                            color = DarkBackground,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    } else {
+                        Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null, tint = DarkBackground)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Create ${selectedLeague.label} Room",
+                            color = DarkBackground,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 15.sp
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(28.dp))

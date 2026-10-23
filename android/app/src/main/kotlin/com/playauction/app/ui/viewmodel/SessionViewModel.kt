@@ -1,14 +1,17 @@
 package com.playauction.app.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.playauction.app.data.local.SessionDataStore
 import com.playauction.app.data.model.SessionData
+import com.playauction.app.data.network.DynamicUrlInterceptor
 import com.playauction.app.data.repository.SessionRepository
 import com.playauction.app.data.socket.SocketManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 sealed class SessionUiState {
@@ -27,7 +30,8 @@ sealed class SessionEvent {
 class SessionViewModel @Inject constructor(
     private val sessionRepo: SessionRepository,
     private val socketManager: SocketManager,
-    private val dataStore: SessionDataStore
+    private val dataStore: SessionDataStore,
+    private val dynamicUrlInterceptor: DynamicUrlInterceptor
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SessionUiState>(SessionUiState.Idle)
@@ -57,19 +61,30 @@ class SessionViewModel @Inject constructor(
         }
     }
 
-    fun initSession(playerName: String, serverUrl: String) {
+    fun initSession(playerName: String, serverUrl: String, onConnected: (() -> Unit)? = null) {
         viewModelScope.launch {
             _uiState.value = SessionUiState.Loading
             try {
+                dynamicUrlInterceptor.setBaseUrl(serverUrl)
                 val session = sessionRepo.initSession(playerName)
                 // (Re-)connect socket with fresh token
                 socketManager.connect(serverUrl, session.token)
+
+                // Wait for WebSocket connection before notifying caller (max 5s)
+                val connected = withTimeoutOrNull(5000L) {
+                    socketManager.isConnected.filter { it }.first()
+                }
+                if (connected == null) {
+                    Log.w("SessionViewModel", "Socket connection wait timed out, continuing anyway")
+                }
+
                 _uiState.value = SessionUiState.Ready(
                     userId     = session.userId,
                     playerName = session.playerName,
                     token      = session.token
                 )
                 _events.emit(SessionEvent.SessionReady(session))
+                onConnected?.invoke()
             } catch (e: Exception) {
                 val msg = e.message ?: "Failed to create session"
                 _uiState.value = SessionUiState.Error(msg)

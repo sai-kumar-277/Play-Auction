@@ -63,8 +63,8 @@ class SessionRepository @Inject constructor(
             dataStore.clearSession()
             return CurrentSession(null, null, null)
         }
-        val userId     = payload.optString("userId", null)
-        val playerName = payload.optString("playerName", null)
+        val userId     = payload.optString("userId").takeIf { it.isNotBlank() }
+        val playerName = payload.optString("playerName").takeIf { it.isNotBlank() }
         return CurrentSession(token, userId, playerName)
     }
 

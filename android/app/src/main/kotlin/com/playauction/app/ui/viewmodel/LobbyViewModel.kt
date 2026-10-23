@@ -3,6 +3,7 @@ package com.playauction.app.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.playauction.app.data.model.*
+import com.playauction.app.data.socket.*
 import com.playauction.app.data.socket.SocketManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -176,7 +177,7 @@ class LobbyViewModel @Inject constructor(
         }
         viewModelScope.launch {
             socketManager.onRetentionsAlreadySubmitted.collect { evt ->
-                _state.update { it.copy(retentionConfirmed = true, myRetentions = evt.retainedPlayers, customPrices = evt.customPrices.mapValues { it.value.toDouble() }) }
+                _state.update { it.copy(retentionConfirmed = true, myRetentions = evt.retainedPlayers, customPrices = evt.customPrices) }
             }
         }
         viewModelScope.launch {

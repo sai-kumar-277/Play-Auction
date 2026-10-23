@@ -1,338 +1,194 @@
 package com.playauction.app.data.socket
 
 import com.google.gson.annotations.SerializedName
+import com.playauction.app.data.model.*
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Room / Lobby events
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Socket Event Payloads ───────────────────────────────────────────────────
 
 data class RoomCreatedEvent(
-    @SerializedName("roomCode") val roomCode: String,
-    @SerializedName("roomState") val roomState: RoomState
-)
-
-data class RoomState(
-    @SerializedName("roomCode") val roomCode: String,
-    @SerializedName("roomType") val roomType: String,
-    @SerializedName("league") val league: String,
-    @SerializedName("currency") val currency: String,
-    @SerializedName("auctionYear") val auctionYear: String?,
-    @SerializedName("hostId") val hostId: String,
-    @SerializedName("hostName") val hostName: String,
-    @SerializedName("coHosts") val coHosts: List<String> = emptyList(),
-    @SerializedName("participants") val participants: List<Participant> = emptyList(),
-    @SerializedName("spectators") val spectators: List<Spectator> = emptyList(),
-    @SerializedName("teams") val teams: List<TeamInfo> = emptyList(),
-    @SerializedName("phase") val phase: String,
-    @SerializedName("timerDuration") val timerDuration: Int,
-    @SerializedName("allowSpectators") val allowSpectators: Boolean,
-    @SerializedName("maxSpectators") val maxSpectators: Int,
-    @SerializedName("isPublic") val isPublic: Boolean,
-    @SerializedName("currentPlayerPool") val currentPlayerPool: List<AuctionPlayer>?,
-    @SerializedName("currentPlayer") val currentPlayer: AuctionPlayer?,
-    @SerializedName("currentBid") val currentBid: Double?,
-    @SerializedName("currentBidder") val currentBidder: String?,
-    @SerializedName("requiresApproval") val requiresApproval: Boolean = false,
-    @SerializedName("rtmState") val rtmState: RtmState? = null
-)
-
-data class Participant(
-    @SerializedName("userId") val userId: String,
-    @SerializedName("socketId") val socketId: String,
-    @SerializedName("name") val name: String,
-    @SerializedName("teamId") val teamId: String?,
-    @SerializedName("teamName") val teamName: String?,
-    @SerializedName("budget") val budget: Double,
-    @SerializedName("isOnline") val isOnline: Boolean,
-    @SerializedName("isHost") val isHost: Boolean,
-    @SerializedName("isCoHost") val isCoHost: Boolean
-)
-
-data class Spectator(
-    @SerializedName("userId") val userId: String,
-    @SerializedName("socketId") val socketId: String,
-    @SerializedName("name") val name: String,
-    @SerializedName("isOnline") val isOnline: Boolean
-)
-
-data class TeamInfo(
-    @SerializedName("teamId") val teamId: String,
-    @SerializedName("teamName") val teamName: String,
-    @SerializedName("shortName") val shortName: String?,
-    @SerializedName("logoUrl") val logoUrl: String?,
-    @SerializedName("ownerId") val ownerId: String?,
-    @SerializedName("ownerName") val ownerName: String?,
-    @SerializedName("budget") val budget: Double,
-    @SerializedName("players") val players: List<AuctionPlayer> = emptyList()
-)
-
-data class AuctionPlayer(
-    @SerializedName("playerId") val playerId: String,
-    @SerializedName("playerName") val playerName: String,
-    @SerializedName("role") val role: String?,
-    @SerializedName("country") val country: String?,
-    @SerializedName("basePrice") val basePrice: Double,
-    @SerializedName("soldPrice") val soldPrice: Double?,
-    @SerializedName("soldTo") val soldTo: String?,
-    @SerializedName("imageUrl") val imageUrl: String?,
-    @SerializedName("isCapped") val isCapped: Boolean = false,
-    @SerializedName("battingStyle") val battingStyle: String?,
-    @SerializedName("bowlingStyle") val bowlingStyle: String?
+    @SerializedName("roomCode") val roomCode: String? = null,
+    @SerializedName("state") val state: RoomState? = null
 )
 
 data class AvailableTeamsEvent(
-    @SerializedName("teams") val teams: List<TeamInfo>
+    @SerializedName("teams") val teams: List<FranchiseDef> = emptyList(),
+    @SerializedName("presignedByTeam") val presignedByTeam: Map<String, String>? = null
 )
 
 data class LobbyUpdateEvent(
-    @SerializedName("participants") val participants: List<Participant>,
-    @SerializedName("spectators") val spectators: List<Spectator>,
-    @SerializedName("teams") val teams: List<TeamInfo>
+    @SerializedName("teams") val teams: List<Team> = emptyList()
 )
 
 data class SpectatorUpdateEvent(
-    @SerializedName("spectators") val spectators: List<Spectator>
+    @SerializedName("spectators") val spectators: List<SpectatorInfo> = emptyList()
 )
-
-data class PublicRoom(
-    @SerializedName("roomCode") val roomCode: String,
-    @SerializedName("league") val league: String,
-    @SerializedName("roomType") val roomType: String,
-    @SerializedName("hostName") val hostName: String,
-    @SerializedName("participantCount") val participantCount: Int,
-    @SerializedName("maxParticipants") val maxParticipants: Int,
-    @SerializedName("phase") val phase: String,
-    @SerializedName("requiresApproval") val requiresApproval: Boolean = false
-)
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Auction events
-// ─────────────────────────────────────────────────────────────────────────────
 
 data class NewPlayerEvent(
-    @SerializedName("player") val player: AuctionPlayer,
-    @SerializedName("pool") val pool: List<AuctionPlayer>?,
-    @SerializedName("poolIndex") val poolIndex: Int?,
-    @SerializedName("poolSize") val poolSize: Int?
+    @SerializedName("player") val player: Player? = null,
+    @SerializedName("nextPlayers") val nextPlayers: List<Player>? = null,
+    @SerializedName("timer") val timer: Int = 10,
+    @SerializedName("skippedHistory") val skippedHistory: List<Player>? = null
 )
+
+data class CompactBid(
+    @SerializedName("a") val amount: Double = 0.0,
+    @SerializedName("tid") val teamId: String? = null,
+    @SerializedName("tn") val teamName: String? = null,
+    @SerializedName("tc") val teamColor: String? = null,
+    @SerializedName("tl") val teamLogo: String? = null,
+    @SerializedName("on") val ownerName: String? = null,
+    @SerializedName("isRtm") val isRtm: Boolean = false
+) {
+    fun toCurrentBid(): CurrentBid = CurrentBid(
+        amount = amount,
+        teamId = teamId,
+        teamName = teamName,
+        teamColor = teamColor,
+        teamLogo = teamLogo,
+        ownerName = ownerName,
+        isRtm = isRtm
+    )
+}
 
 data class BidPlacedEvent(
-    @SerializedName("bidderId") val bidderId: String,
-    @SerializedName("bidderName") val bidderName: String,
-    @SerializedName("teamName") val teamName: String?,
-    @SerializedName("amount") val amount: Double,
-    @SerializedName("playerId") val playerId: String
-)
+    @SerializedName("currentBid") val legacyBid: CurrentBid? = null,
+    @SerializedName("cb") val compactBid: CompactBid? = null,
+    @SerializedName("timer") val legacyTimer: Int? = null,
+    @SerializedName("t") val compactTimer: Int? = null
+) {
+    val currentBid: CurrentBid
+        get() = compactBid?.toCurrentBid() ?: legacyBid ?: CurrentBid.EMPTY
+
+    val timer: Int
+        get() = compactTimer ?: legacyTimer ?: 10
+}
 
 data class AuctionStateSyncEvent(
-    @SerializedName("currentPlayer") val currentPlayer: AuctionPlayer?,
-    @SerializedName("currentPool") val currentPool: List<AuctionPlayer>?,
-    @SerializedName("currentBid") val currentBid: Double?,
-    @SerializedName("currentBidder") val currentBidder: String?,
-    @SerializedName("currentBidderName") val currentBidderName: String?,
-    @SerializedName("timerRemaining") val timerRemaining: Int,
-    @SerializedName("phase") val phase: String,
-    @SerializedName("teams") val teams: List<TeamInfo>,
-    @SerializedName("participants") val participants: List<Participant>
+    @SerializedName("status") val status: String = "Auctioning",
+    @SerializedName("currentIndex") val currentIndex: Int = 0,
+    @SerializedName("currentPlayer") val currentPlayer: Player? = null,
+    @SerializedName("currentBid") val currentBid: CurrentBid? = null,
+    @SerializedName("timer") val timer: Int = 10,
+    @SerializedName("timerDuration") val timerDuration: Int = 10,
+    @SerializedName("teams") val teams: List<Team> = emptyList(),
+    @SerializedName("last5Bids") val last5Bids: List<CurrentBid> = emptyList(),
+    @SerializedName("rtmState") val rtmState: RtmState? = null
 )
 
 data class PlayerSoldEvent(
-    @SerializedName("player") val player: AuctionPlayer,
-    @SerializedName("soldTo") val soldTo: String,
-    @SerializedName("soldToName") val soldToName: String,
-    @SerializedName("soldPrice") val soldPrice: Double,
-    @SerializedName("remainingBudget") val remainingBudget: Double
+    @SerializedName("player") val player: Player,
+    @SerializedName("winningBid") val winningBid: CurrentBid? = null,
+    @SerializedName("teams") val teams: List<Team> = emptyList()
 )
 
 data class PlayerUnsoldEvent(
-    @SerializedName("player") val player: AuctionPlayer,
-    @SerializedName("reason") val reason: String?
+    @SerializedName("player") val player: Player,
+    @SerializedName("unsoldHistory") val updatedUnsoldHistory: List<Player>? = null
 )
-
-data class AuctionResumedEvent(
-    @SerializedName("currentPlayer") val currentPlayer: AuctionPlayer?,
-    @SerializedName("currentBid") val currentBid: Double?,
-    @SerializedName("timerRemaining") val timerRemaining: Int
-)
-
-data class AuctionFinishedEvent(
-    @SerializedName("teams") val teams: List<TeamInfo>,
-    @SerializedName("soldPlayers") val soldPlayers: List<AuctionPlayer>,
-    @SerializedName("unsoldPlayers") val unsoldPlayers: List<AuctionPlayer>
-)
-
-data class AuctionEndRequestEvent(
-    @SerializedName("requestedBy") val requestedBy: String,
-    @SerializedName("requestedByName") val requestedByName: String,
-    @SerializedName("acknowledgements") val acknowledgements: List<String>
-)
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Chat
-// ─────────────────────────────────────────────────────────────────────────────
-
-data class ChatMessage(
-    @SerializedName("senderId") val senderId: String,
-    @SerializedName("senderName") val senderName: String,
-    @SerializedName("message") val message: String,
-    @SerializedName("timestamp") val timestamp: Long,
-    @SerializedName("isSystem") val isSystem: Boolean = false
-)
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Interest Voting
-// ─────────────────────────────────────────────────────────────────────────────
 
 data class InterestVotingEvent(
-    @SerializedName("players") val players: List<AuctionPlayer>,
-    @SerializedName("durationSeconds") val durationSeconds: Int,
-    @SerializedName("maxVotes") val maxVotes: Int
+    @SerializedName("players") val players: List<VotingCandidateDef> = emptyList(),
+    @SerializedName("timer") val timer: Int = 240,
+    @SerializedName("isFinal") val isFinal: Boolean = false
+)
+
+data class VotingCandidateDef(
+    @SerializedName("_id") val id: String = "",
+    @SerializedName("name") val name: String = "",
+    @SerializedName("poolID") val poolID: String? = null,
+    @SerializedName("basePrice") val basePrice: Double? = null
 )
 
 data class VotingCompletedEvent(
-    @SerializedName("selectedPlayers") val selectedPlayers: List<AuctionPlayer>,
-    @SerializedName("voteCounts") val voteCounts: Map<String, Int>
+    @SerializedName("skippedCount") val skippedCount: Int = 0,
+    @SerializedName("isFinal") val isFinal: Boolean = false,
+    @SerializedName("message") val message: String? = null
 )
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Quiz Phase
-// ─────────────────────────────────────────────────────────────────────────────
 
 data class QuizStartedEvent(
-    @SerializedName("totalQuestions") val totalQuestions: Int,
-    @SerializedName("durationPerQuestion") val durationPerQuestion: Int,
-    @SerializedName("leagueName") val leagueName: String
-)
-
-data class QuizQuestion(
-    @SerializedName("questionIndex") val questionIndex: Int,
-    @SerializedName("questionText") val questionText: String,
-    @SerializedName("options") val options: List<String>,
-    @SerializedName("imageUrl") val imageUrl: String?,
-    @SerializedName("totalQuestions") val totalQuestions: Int
+    @SerializedName("roomCode") val roomCode: String = "",
+    @SerializedName("league") val league: String = "ipl",
+    @SerializedName("totalQuestions") val totalQuestions: Int = 10
 )
 
 data class QuizTimerEvent(
-    @SerializedName("questionIndex") val questionIndex: Int,
-    @SerializedName("secondsRemaining") val secondsRemaining: Int
+    @SerializedName("remaining") val remaining: Int = 0,
+    @SerializedName("questionNumber") val questionNumber: Int = 0,
+    @SerializedName("totalQuestions") val totalQuestions: Int = 10
 )
 
-data class QuizLeaderboardEntry(
-    @SerializedName("userId") val userId: String,
-    @SerializedName("name") val name: String,
-    @SerializedName("score") val score: Int,
-    @SerializedName("correctAnswers") val correctAnswers: Int,
-    @SerializedName("rank") val rank: Int,
-    @SerializedName("budgetBonus") val budgetBonus: Double
+data class AuctionFinishedEvent(
+    @SerializedName("teams") val teams: List<Team> = emptyList(),
+    @SerializedName("quizLeaderboard") val quizLeaderboard: List<QuizLeaderboardEntry> = emptyList()
 )
-
-data class QuizAnswerResult(
-    @SerializedName("questionIndex") val questionIndex: Int,
-    @SerializedName("isCorrect") val isCorrect: Boolean,
-    @SerializedName("correctAnswerIndex") val correctAnswerIndex: Int,
-    @SerializedName("pointsEarned") val pointsEarned: Int
-)
-
-data class QuizQuestionClosed(
-    @SerializedName("questionIndex") val questionIndex: Int,
-    @SerializedName("correctAnswerIndex") val correctAnswerIndex: Int,
-    @SerializedName("correctAnswerText") val correctAnswerText: String
-)
-
-// ─────────────────────────────────────────────────────────────────────────────
-// RTM (Right To Match)
-// ─────────────────────────────────────────────────────────────────────────────
-
-data class RtmState(
-    @SerializedName("isActive") val isActive: Boolean,
-    @SerializedName("eligibleTeamId") val eligibleTeamId: String?,
-    @SerializedName("eligibleTeamName") val eligibleTeamName: String?,
-    @SerializedName("player") val player: AuctionPlayer?,
-    @SerializedName("matchAmount") val matchAmount: Double?,
-    @SerializedName("decisionDeadline") val decisionDeadline: Long?
-)
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Retention
-// ─────────────────────────────────────────────────────────────────────────────
-
-data class RetentionSquadsEvent(
-    @SerializedName("squads") val squads: List<TeamRetentionSquad>
-)
-
-data class TeamRetentionSquad(
-    @SerializedName("teamId") val teamId: String,
-    @SerializedName("teamName") val teamName: String,
-    @SerializedName("ownerId") val ownerId: String?,
-    @SerializedName("players") val players: List<AuctionPlayer>,
-    @SerializedName("hasSubmitted") val hasSubmitted: Boolean,
-    @SerializedName("retainedCount") val retainedCount: Int
-)
-
-data class MyRetentionSquadEvent(
-    @SerializedName("teamId") val teamId: String,
-    @SerializedName("players") val players: List<AuctionPlayer>,
-    @SerializedName("maxRetentions") val maxRetentions: Int,
-    @SerializedName("retentionCosts") val retentionCosts: Map<String, Double>
-)
-
-data class RetentionsConfirmedEvent(
-    @SerializedName("teamId") val teamId: String,
-    @SerializedName("retainedPlayers") val retainedPlayers: List<AuctionPlayer>,
-    @SerializedName("remainingBudget") val remainingBudget: Double
-)
-
-data class RetentionsAlreadySubmittedEvent(
-    @SerializedName("teamId") val teamId: String,
-    @SerializedName("message") val message: String
-)
-
-data class LobbyRetentionUpdateEvent(
-    @SerializedName("teamId") val teamId: String,
-    @SerializedName("teamName") val teamName: String,
-    @SerializedName("hasSubmitted") val hasSubmitted: Boolean,
-    @SerializedName("submittedCount") val submittedCount: Int,
-    @SerializedName("totalCount") val totalCount: Int
-)
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Permissions / Host
-// ─────────────────────────────────────────────────────────────────────────────
 
 data class HostChangedEvent(
-    @SerializedName("newHostId") val newHostId: String,
-    @SerializedName("newHostName") val newHostName: String
-)
-
-data class JoinRequestsUpdateEvent(
-    @SerializedName("pendingRequests") val pendingRequests: List<PendingJoinRequest>
-)
-
-data class PendingJoinRequest(
-    @SerializedName("userId") val userId: String?,
-    @SerializedName("socketId") val socketId: String,
-    @SerializedName("name") val name: String,
-    @SerializedName("requestedAt") val requestedAt: Long
+    @SerializedName("newHostUserId") val newHostUserId: String? = null,
+    @SerializedName("newHostName") val newHostName: String? = null,
+    @SerializedName("socketId") val socketId: String? = null
 )
 
 data class TeamRosterEvent(
-    @SerializedName("teamId") val teamId: String,
-    @SerializedName("teamName") val teamName: String,
-    @SerializedName("players") val players: List<AuctionPlayer>,
-    @SerializedName("budget") val budget: Double
+    @SerializedName("teamId") val teamId: String = "",
+    @SerializedName("playersAcquired") val playersAcquired: List<AcquiredPlayer> = emptyList()
+)
+
+data class JoinRequestsUpdateEvent(
+    @SerializedName("roomCode") val roomCode: String = "",
+    @SerializedName("requests") val requests: List<JoinRequest> = emptyList()
+)
+
+data class RetentionSquadsEvent(
+    @SerializedName("squads") val squads: Map<String, List<RetentionPlayer>> = emptyMap(),
+    @SerializedName("auctionYear") val auctionYear: String? = null,
+    @SerializedName("league") val league: String? = null
+)
+
+data class MyRetentionSquadEvent(
+    @SerializedName("squad") val squad: List<RetentionPlayer> = emptyList(),
+    @SerializedName("auctionYear") val auctionYear: String? = null,
+    @SerializedName("league") val league: String? = null
+)
+
+data class RetentionsConfirmedEvent(
+    @SerializedName("teamName") val teamName: String = "",
+    @SerializedName("retentionDetails") val retentionDetails: List<Any>? = null,
+    @SerializedName("totalCost") val totalCost: Double = 0.0
+)
+
+data class RetentionsAlreadySubmittedEvent(
+    @SerializedName("retainedPlayers") val retainedPlayers: List<String> = emptyList(),
+    @SerializedName("customPrices") val customPrices: Map<String, Double> = emptyMap()
+)
+
+data class LobbyRetentionUpdateEvent(
+    @SerializedName("retentionStatus") val retentionStatus: Map<String, List<String>?> = emptyMap(),
+    @SerializedName("customPricesByTeam") val customPricesByTeam: Map<String, Map<String, Double>> = emptyMap()
 )
 
 data class SettingsUpdatedEvent(
-    @SerializedName("timerDuration") val timerDuration: Int?,
-    @SerializedName("allowSpectators") val allowSpectators: Boolean?,
-    @SerializedName("maxSpectators") val maxSpectators: Int?,
-    @SerializedName("teamCount") val teamCount: Int?
+    @SerializedName("timerDuration") val timerDuration: Int = 10,
+    @SerializedName("timer") val timer: Int? = null
 )
 
 data class LobbySettingsEvent(
-    @SerializedName("allowSpectators") val allowSpectators: Boolean,
-    @SerializedName("maxSpectators") val maxSpectators: Int,
-    @SerializedName("teamCount") val teamCount: Int,
-    @SerializedName("timerDuration") val timerDuration: Int,
-    @SerializedName("requiresApproval") val requiresApproval: Boolean
+    @SerializedName("allowSpectators") val allowSpectators: Boolean = true,
+    @SerializedName("maxSpectators") val maxSpectators: Int = 10,
+    @SerializedName("teamCount") val teamCount: Int = 15
+)
+
+data class AuctionEndRequestEvent(
+    @SerializedName("endRequest") val endRequest: Map<String, Any>? = null,
+    @SerializedName("acknowledgedBy") val acknowledgedBy: List<String> = emptyList(),
+    @SerializedName("humanOwners") val humanOwners: List<String> = emptyList()
+)
+
+data class AuctionResumedEvent(
+    @SerializedName("timer") val timer: Int? = null
+)
+
+data class QuizQuestionClosed(
+    @SerializedName("quizIndex") val quizIndex: Int = 0,
+    @SerializedName("correctIndex") val correctIndex: Int = 0,
+    @SerializedName("correctAnswer") val correctAnswer: String = ""
 )

@@ -82,7 +82,7 @@ data class Player(
     @SerializedName("isU23") val isU23: Boolean=false,
     @SerializedName("isUncapped") val isUncapped: Boolean=false,
     @SerializedName("age") val age: Int?=null,
-    @SerializedName("points") val points: Int?=null,
+    @SerializedName("points") val points: String?=null,
     @SerializedName("boughtFor") val boughtFor: Double?=null,
     @SerializedName("isRetained") val isRetained: Boolean=false
 ) {

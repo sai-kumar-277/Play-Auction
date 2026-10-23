@@ -21,22 +21,6 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object SocketModule {
 
-    /**
-     * Provides a shared [Gson] instance. If your app already provides a
-     * [Gson] elsewhere (e.g. a NetworkModule), remove this method to avoid
-     * duplicate binding and let Hilt pick up the existing one.
-     */
-    @Provides
-    @Singleton
-    fun provideGson(): Gson = Gson()
-
-    /**
-     * Explicitly documents that [SocketManager] is available in the graph.
-     * Because [SocketManager] is constructor-injected with @Singleton, Hilt
-     * resolves it without an @Provides method, but this companion object keeps
-     * all socket-related bindings in one place for discoverability.
-     *
-     * Downstream consumers simply `@Inject constructor(socketManager: SocketManager)`.
-     */
-    // No @Provides needed for SocketManager — Hilt auto-binds @Inject @Singleton classes.
+    // Gson is provided as a Singleton by NetworkModule.
+    // SocketManager is constructor-injected with @Singleton, so Hilt binds it automatically.
 }

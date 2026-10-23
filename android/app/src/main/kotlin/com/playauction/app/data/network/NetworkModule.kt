@@ -1,30 +1,52 @@
 package com.playauction.app.data.network
 
-import android.content.Context
-import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.playauction.app.data.local.SessionDataStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import javax.inject.Singleton
+
+@Singleton
+class DynamicUrlInterceptor @Inject constructor() : Interceptor {
+    @Volatile
+    private var hostUrl: String? = null
+
+    fun setBaseUrl(url: String) {
+        val trimmed = url.trim().let { if (it.endsWith("/")) it else "$it/" }
+        hostUrl = trimmed
+    }
+
+    override fun intercept(chain: Interceptor.Chain): Response {
+        var request = chain.request()
+        val custom = hostUrl?.toHttpUrlOrNull()
+        if (custom != null) {
+            val newUrl = request.url.newBuilder()
+                .scheme(custom.scheme)
+                .host(custom.host)
+                .port(custom.port)
+                .build()
+            request = request.newBuilder().url(newUrl).build()
+        }
+        return chain.proceed(request)
+    }
+}
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    /**
-     * Base URL is configured per build flavor via BuildConfig.BASE_URL.
-     * Default fallback: production server.
-     */
-    private const val DEFAULT_BASE_URL = "https://playauction.onrender.com/"
+    private val DEFAULT_BASE_URL = com.playauction.app.BuildConfig.BASE_URL
 
     @Provides
     @Singleton
@@ -33,7 +55,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(
-        sessionDataStore: SessionDataStore
+        sessionDataStore: SessionDataStore,
+        dynamicUrlInterceptor: DynamicUrlInterceptor
     ): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -42,6 +65,7 @@ object NetworkModule {
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor(dynamicUrlInterceptor)
             .addInterceptor(logging)
             .addInterceptor { chain ->
                 val token = sessionDataStore.getTokenBlocking()
@@ -60,7 +84,6 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit {
-        // In production builds, BuildConfig.BASE_URL overrides this constant.
         val baseUrl = try {
             Class.forName("com.playauction.app.BuildConfig")
                 .getField("BASE_URL").get(null) as? String

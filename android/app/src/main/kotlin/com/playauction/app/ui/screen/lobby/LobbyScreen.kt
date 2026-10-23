@@ -209,8 +209,13 @@ fun LobbyScreen(
                         )
                     }
 
+                    val franchises = when {
+                        state.availableTeams.isNotEmpty() -> state.availableTeams
+                        !roomState?.availableTeams.isNullOrEmpty() -> roomState!!.availableTeams
+                        else -> emptyList()
+                    }
                     val claimedCount = roomState?.teams?.count { !it.ownerUserId.isNullOrBlank() } ?: 0
-                    val totalTeams = roomState?.teams?.size ?: 0
+                    val totalTeams = if (franchises.isNotEmpty()) (franchises.size + claimedCount) else (roomState?.teams?.size ?: 0)
                     Text(
                         text = "$claimedCount / $totalTeams Claimed",
                         color = GoldLight,
@@ -221,24 +226,64 @@ fun LobbyScreen(
             }
 
             // Teams Grid
+            val franchises = when {
+                state.availableTeams.isNotEmpty() -> state.availableTeams
+                !roomState?.availableTeams.isNullOrEmpty() -> roomState!!.availableTeams
+                else -> emptyList()
+            }
             val teamsList = roomState?.teams ?: emptyList()
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.weight(1f)
-            ) {
-                items(teamsList) { team ->
-                    TeamClaimCard(
-                        team = team,
-                        currency = roomState?.currency ?: "inr",
-                        isMyTeam = team.ownerUserId == currentUserId,
-                        onClaim = {
-                            team.franchiseId?.let { fid ->
-                                lobbyViewModel.claimTeam(fid)
+
+            if (franchises.isEmpty() && teamsList.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = GoldPrimary)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = if (state.isLoading) "Connecting to auction room..." else "Waiting for room data...",
+                            color = TextSecondary,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    // Show already claimed teams first
+                    items(teamsList) { team ->
+                        TeamClaimCard(
+                            team = team,
+                            currency = roomState?.currency ?: "inr",
+                            isMyTeam = team.ownerUserId == currentUserId,
+                            onClaim = {}
+                        )
+                    }
+                    // Show available unclaimed franchises
+                    items(franchises) { f ->
+                        val displayTeam = Team(
+                            franchiseId = f.shortName,
+                            teamName = f.name,
+                            teamThemeColor = f.primaryColor,
+                            teamLogo = f.logoUrl,
+                            currentPurse = f.purseLimit
+                        )
+                        TeamClaimCard(
+                            team = displayTeam,
+                            currency = roomState?.currency ?: "inr",
+                            isMyTeam = false,
+                            onClaim = {
+                                lobbyViewModel.claimTeam(f.shortName)
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

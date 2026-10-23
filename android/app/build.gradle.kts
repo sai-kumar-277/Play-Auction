@@ -28,8 +28,8 @@ android {
             arg("room.expandProjection", "true")
         }
 
-        buildConfigField("String", "BASE_URL", "\"https://api.playauction.com/\"")
-        buildConfigField("String", "SOCKET_URL", "\"wss://socket.playauction.com\"")
+        buildConfigField("String", "BASE_URL", "\"https://play-auction.onrender.com/\"")
+        buildConfigField("String", "SOCKET_URL", "\"https://play-auction.onrender.com\"")
         buildConfigField("int", "SOCKET_PORT", "3000")
         buildConfigField("boolean", "ENABLE_LOGS", "true")
     }
@@ -42,11 +42,19 @@ android {
             val keyAlias = project.findProperty("RELEASE_KEY_ALIAS") as String? ?: ""
             val keyPassword = project.findProperty("RELEASE_KEY_PASSWORD") as String? ?: ""
 
-            if (keystoreFile.isNotEmpty()) {
+            if (keystoreFile.isNotEmpty() && file(keystoreFile).exists()) {
                 storeFile = file(keystoreFile)
                 storePassword = keystorePassword
                 this.keyAlias = keyAlias
                 this.keyPassword = keyPassword
+            } else {
+                val debugKeystore = file("${System.getProperty("user.home")}/.android/debug.keystore")
+                if (debugKeystore.exists()) {
+                    storeFile = debugKeystore
+                    storePassword = "android"
+                    this.keyAlias = "androiddebugkey"
+                    this.keyPassword = "android"
+                }
             }
         }
     }
@@ -78,8 +86,8 @@ android {
             dimension = "environment"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
-            buildConfigField("String", "BASE_URL", "\"https://dev-api.playauction.com/\"")
-            buildConfigField("String", "SOCKET_URL", "\"wss://dev-socket.playauction.com\"")
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:5000/\"")
+            buildConfigField("String", "SOCKET_URL", "\"http://10.0.2.2:5000\"")
         }
         create("staging") {
             dimension = "environment"
@@ -90,8 +98,8 @@ android {
         }
         create("prod") {
             dimension = "environment"
-            buildConfigField("String", "BASE_URL", "\"https://api.playauction.com/\"")
-            buildConfigField("String", "SOCKET_URL", "\"wss://socket.playauction.com\"")
+            buildConfigField("String", "BASE_URL", "\"https://play-auction.onrender.com/\"")
+            buildConfigField("String", "SOCKET_URL", "\"https://play-auction.onrender.com\"")
         }
     }
 
