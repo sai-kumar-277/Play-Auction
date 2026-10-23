@@ -63,7 +63,9 @@ async function fetchAllPlayers(league = 'ipl') {
                 const ids = PlayerCache.pools[key] || [];
                 for (const id of ids) {
                     const player = PlayerCache.playersMap.get(String(id));
-                    if (player) allPlayers.push(Object.assign({}, player));
+                    if (player && (player.league || normalizedLeague) === normalizedLeague) {
+                        allPlayers.push(Object.assign({}, player));
+                    }
                 }
             }
             // Flat-cache fallback: if per-collection pools returned 0 players (e.g. when all

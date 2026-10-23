@@ -5,6 +5,36 @@
 
 const { isUncappedPlayer } = require('../services/sa20History');
 
+// Curated authentic headshots for players whose DB record is missing images or broken
+const KNOWN_PLAYER_IMAGES = {
+    'sourav ganguly': 'https://documents.iplt20.com/playerheadshot/ipl/284/1.png',
+    'andrew tye': 'https://documents.iplt20.com/playerheadshot/ipl/284/1480.png',
+    'l balaji': 'https://documents.iplt20.com/playerheadshot/ipl/284/12.png',
+    'lakshmipathy balaji': 'https://documents.iplt20.com/playerheadshot/ipl/284/12.png',
+    'angelo mathews': 'https://documents.iplt20.com/playerheadshot/ipl/284/156.png',
+    'travis head': 'https://documents.iplt20.com/ipl/IPLHeadshot2024/1020.png',
+    'adam milne': 'https://documents.iplt20.com/playerheadshot/ipl/284/434.png',
+    'shamar joseph': 'https://documents.iplt20.com/ipl/IPLHeadshot2024/1041.png',
+    'ashton turner': 'https://documents.iplt20.com/playerheadshot/ipl/284/2972.png',
+    'avishka fernando': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/64016.png',
+    'dunith wellalage': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/68636.png',
+    'jordan hermann': 'https://www.sunrisersec.co.za/static-assets/images/players/69103.png',
+    'mitchell van buuren': 'https://www.joburgsuperkings.com/static-assets/images/players/67073.png',
+    'jason smith': 'https://www.durbanssupergiants.com/static-assets/images/players/60343.png',
+    'bryce parsons': 'https://www.durbanssupergiants.com/static-assets/images/players/69123.png',
+    'daniel worrall': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/61821.png',
+    'sam hain': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/61866.png',
+    'tom rogers': 'https://static-files.cricket-australia.pulselive.com/headshots/288/1498-t20i.png',
+    'rubin hermann': 'https://www.paarlroyals.com/static-assets/images/players/69113.png',
+    'roston chase': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/62831.png',
+    'brandon king': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/63701.png',
+    'saqib mahmood': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/64756.png',
+    'kyle abbott': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/59716.png',
+    'kamindu mendis': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/64871.png',
+    'karim janat': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/65301.png',
+    'daryn dupavillon': 'https://www.durbanssupergiants.com/static-assets/images/players/61053.png'
+};
+
 const parseStatNum = (val) => {
     if (val === undefined || val === null || String(val).trim() === '-') return 0;
     const num = parseFloat(String(val).replace(/,/g, '').trim());
@@ -21,7 +51,7 @@ const getCollectionsForLeague = (league) => {
     if (l === 'sa20') {
         return [
             'sa20_data',
-        'MEGA',
+            'MEGA',
             'ELITE',
             'DAIMOND',
             'GOLD',
@@ -32,7 +62,7 @@ const getCollectionsForLeague = (league) => {
     if (l === 'wpl') {
         return [
             'wpl_data',
-        'marquee',
+            'marquee',
             'batters',
             'wicketkeepers',
             'bowlers',
@@ -75,7 +105,8 @@ const mapTeamTakenToFranchise = (teamTaken) => {
 
 const normalizePlayer = (p, collName) => {
     const lowerColl = collName.toLowerCase();
-    const isSa20 = ['mega', 'elite', 'daimond', 'gold', 'silver', 'domestic', 'presigned_players'].includes(lowerColl) || lowerColl.startsWith('set_');
+    const isSa20 = ['sa20_data', 'mega', 'elite', 'daimond', 'gold', 'silver', 'domestic', 'presigned_players'].includes(lowerColl) || lowerColl.startsWith('set_');
+    const isWpl = ['wpl_data'].includes(lowerColl) || ['marquee', 'batters', 'wicketkeepers', 'bowlers', 'allrounders', 'uncapped'].includes(lowerColl);
 
     // 1. Determine Name
     const firstName = p["First Name"] || p.First_Name || p.firstName || "";
@@ -153,8 +184,24 @@ const normalizePlayer = (p, collName) => {
     if (p.Catches && typeof p.Catches === 'string' && (p.Catches.startsWith('http') || p.Catches.startsWith('data:'))) {
         fallbackImg = p.Catches;
     }
-    const imgUrl = p.image_url || p.image_path || p.imagepath || p.image || fallbackImg || '';
-    const cleanImgUrl = (/hscicdn\.com\/image\/upload\/f_auto\/?$/i.test(imgUrl) || imgUrl.length < 45) ? '' : imgUrl;
+    const rawImgUrl = p.image_url || p.image_path || p.imagepath || p.image || fallbackImg || '';
+    
+    // Check known player image registry
+    const nameLower = name.toLowerCase().trim();
+    const knownImg = KNOWN_PLAYER_IMAGES[nameLower];
+    
+    let cleanImgUrl = rawImgUrl;
+    if (!cleanImgUrl || cleanImgUrl === '-' || /hscicdn\.com\/image\/upload\/f_auto\/?$/i.test(cleanImgUrl) || cleanImgUrl.length < 10) {
+        cleanImgUrl = knownImg || '';
+    }
+
+    // Determine League: Priority is explicit field > collection deduction
+    let league = p.league;
+    if (!league) {
+        if (isSa20) league = 'sa20';
+        else if (isWpl && lowerColl.includes('wpl')) league = 'wpl';
+        else league = 'ipl';
+    }
 
     return {
         ...p,
@@ -163,6 +210,7 @@ const normalizePlayer = (p, collName) => {
         role,
         nationality,
         isOverseas,
+        league: String(league).toLowerCase(),
         poolName: p.poolName || p.pool || collName.replace(/_/g, ' ').toUpperCase(),
         poolID: p.poolID || p.poolId || collName,
         basePrice: bp,
@@ -193,6 +241,6 @@ const normalizePlayer = (p, collName) => {
 module.exports = {
     normalizePlayer,
     getCollectionsForLeague,
-    mapTeamTakenToFranchise
+    mapTeamTakenToFranchise,
+    KNOWN_PLAYER_IMAGES
 };
-

@@ -77,15 +77,50 @@ export const getRoleDisplayName = (role) => {
     return "BAT"; // Default
 };
 
+// Curated authentic headshots for players whose DB record is missing images or broken
+export const KNOWN_PLAYER_IMAGES = {
+    'sourav ganguly': 'https://documents.iplt20.com/playerheadshot/ipl/284/1.png',
+    'andrew tye': 'https://documents.iplt20.com/playerheadshot/ipl/284/1480.png',
+    'l balaji': 'https://documents.iplt20.com/playerheadshot/ipl/284/12.png',
+    'lakshmipathy balaji': 'https://documents.iplt20.com/playerheadshot/ipl/284/12.png',
+    'angelo mathews': 'https://documents.iplt20.com/playerheadshot/ipl/284/156.png',
+    'travis head': 'https://documents.iplt20.com/ipl/IPLHeadshot2024/1020.png',
+    'adam milne': 'https://documents.iplt20.com/playerheadshot/ipl/284/434.png',
+    'shamar joseph': 'https://documents.iplt20.com/ipl/IPLHeadshot2024/1041.png',
+    'ashton turner': 'https://documents.iplt20.com/playerheadshot/ipl/284/2972.png',
+    'avishka fernando': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/64016.png',
+    'dunith wellalage': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/68636.png',
+    'jordan hermann': 'https://www.sunrisersec.co.za/static-assets/images/players/69103.png',
+    'mitchell van buuren': 'https://www.joburgsuperkings.com/static-assets/images/players/67073.png',
+    'jason smith': 'https://www.durbanssupergiants.com/static-assets/images/players/60343.png',
+    'bryce parsons': 'https://www.durbanssupergiants.com/static-assets/images/players/69123.png',
+    'daniel worrall': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/61821.png',
+    'sam hain': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/61866.png',
+    'tom rogers': 'https://static-files.cricket-australia.pulselive.com/headshots/288/1498-t20i.png',
+    'rubin hermann': 'https://www.paarlroyals.com/static-assets/images/players/69113.png',
+    'roston chase': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/62831.png',
+    'brandon king': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/63701.png',
+    'saqib mahmood': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/64756.png',
+    'kyle abbott': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/59716.png',
+    'kamindu mendis': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/64871.png',
+    'karim janat': 'https://images.icc-cricket.com/image/upload/t_player-headshot-portrait-lg-webp/prd/assets/players/generic/colored/65301.png',
+    'daryn dupavillon': 'https://www.durbanssupergiants.com/static-assets/images/players/61053.png'
+};
+
 /** Returns a usable player photo URL, or null if the stored value is missing/broken. */
 export const resolvePlayerImageUrl = (player) => {
-    const url = player?.image_path || player?.imagepath || player?.photoUrl;
-    if (!url || typeof url !== 'string') return null;
-    if (url.startsWith('data:') && !url.includes('base64,')) return null;
+    const rawUrl = player?.image_path || player?.imagepath || player?.photoUrl;
+    const nameLower = (player?.name || player?.player || '').toLowerCase().trim();
+    const knownImg = KNOWN_PLAYER_IMAGES[nameLower];
+
+    if (!rawUrl || typeof rawUrl !== 'string' || rawUrl === '-' || rawUrl.trim() === '') {
+        return knownImg || null;
+    }
+    if (rawUrl.startsWith('data:') && !rawUrl.includes('base64,')) return knownImg || null;
     // Skip incomplete CDN paths that only contain transform flags
-    if (/hscicdn\.com\/image\/upload\/f_auto\/?$/i.test(url)) return null;
-    if (url.length < 45) return null;
-    return url;
+    if (/hscicdn\.com\/image\/upload\/f_auto\/?$/i.test(rawUrl)) return knownImg || null;
+    if (rawUrl.length < 10) return knownImg || null;
+    return rawUrl;
 };
 
 export const getPlayerImageFallback = (player) => {

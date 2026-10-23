@@ -1383,7 +1383,55 @@ const AuctionPodium = () => {
 
                             {/* Host Controls Block */}
                             {isModerator && (
-                                <div className="flex items-center gap-1.5 p-1 glass-panel rounded-full lg:rounded-xl border border-[#D4AF37]/20">
+                                <div className="flex items-center gap-1 sm:gap-1.5 p-1 glass-panel rounded-full lg:rounded-xl border border-[#D4AF37]/20">
+                                    <button
+                                        onClick={() =>
+                                            socket.emit(isPaused ? "resume_auction" : "pause_auction", { roomCode })
+                                        }
+                                        className={`p-1.5 sm:px-2.5 sm:py-1 rounded-full lg:rounded-lg transition-all flex items-center gap-1.5 ${
+                                            isPaused
+                                                ? "bg-green-600 hover:bg-green-500 text-white shadow-[0_0_10px_rgba(34,197,94,0.4)]"
+                                                : "text-yellow-500/80 hover:text-yellow-300 hover:bg-white/5"
+                                        }`}
+                                        title={isPaused ? "Resume Auction" : "Pause Auction"}
+                                    >
+                                        {isPaused ? <Play className="w-3.5 h-3.5" fill="currentColor" /> : <Pause className="w-3.5 h-3.5" fill="currentColor" />}
+                                        <span className="hidden xl:inline text-[9px] font-black uppercase tracking-wider">{isPaused ? "Resume" : "Pause"}</span>
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            setToast({ message: "Synchronizing state...", type: 'info' });
+                                            socket.emit("join_room", { roomCode, asSpectator: forceSpectator });
+                                        }}
+                                        className="p-1.5 rounded-full lg:rounded-lg text-yellow-500/70 hover:text-yellow-300 hover:bg-white/5 transition-all"
+                                        title="Re-sync Room State"
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
+
+                                    {!isPrimaryHost && gameState?.hostUserId && onlineMap[gameState.hostUserId] === false && (
+                                        <button
+                                            onClick={handleClaimHost}
+                                            className="px-2 py-1 bg-red-600 hover:bg-red-500 text-white rounded-lg text-[9px] font-black uppercase tracking-wider animate-pulse flex items-center gap-1"
+                                            title="Host is offline. Take control of the auction."
+                                        >
+                                            <AlertTriangle className="w-3 h-3" />
+                                            <span>Take Control</span>
+                                        </button>
+                                    )}
+
+                                    <button
+                                        onClick={() => setShowForceEndConfirm(true)}
+                                        className="p-1.5 sm:px-2.5 sm:py-1 rounded-full lg:rounded-lg text-red-500/80 hover:text-red-400 hover:bg-red-500/10 transition-all flex items-center gap-1.5"
+                                        title="End Auction"
+                                    >
+                                        <Square className="w-3.5 h-3.5" fill="currentColor" />
+                                        <span className="hidden xl:inline text-[9px] font-black uppercase tracking-wider">End</span>
+                                    </button>
+
                                     {/* Timer & Host Settings Dropdown */}
                                     <div className="relative ml-1">
                                         <button
@@ -1621,70 +1669,7 @@ const AuctionPodium = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Lobby Info Header - Desktop Only (Redundant on mobile) */}
-                <div className="hidden lg:flex absolute top-2 left-1/2 -translate-x-1/2 items-center gap-4 z-20">
-                    <div className="px-4 py-1.5 rounded-full border border-[#D4AF37]/20 glass-panel text-[10px] font-black uppercase tracking-widest text-[#D4AF37]/60">
-                        Room: {roomCode}
-                    </div>
-                    <div className="px-4 py-1.5 rounded-full border border-[#D4AF37]/20 bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-                        Live Auction
-                    </div>
-                </div>
-
-                {/* Host Controls - Desktop Only (Redundant on mobile header) */}
-                {isModerator && (
-                    <div className="hidden lg:flex absolute top-2 right-8 z-30 items-center gap-4">
-                        <button
-                            onClick={() =>
-                                socket.emit(isPaused ? "resume_auction" : "pause_auction", {
-                                    roomCode,
-                                })
-                            }
-                            className={`px-4 py-2 rounded-xl transition-all flex items-center justify-center min-w-[56px] ${isPaused ? "bg-green-600 hover:bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)]" : "bg-yellow-600/30 hover:bg-yellow-500/40 text-yellow-500 border border-yellow-500/50 backdrop-blur-md"}`}
-                            title={isPaused ? "Resume Auction" : "Pause Auction"}
-                        >
-                            {isPaused ? (
-                                <Play className="w-6 h-6" fill="currentColor" />
-                            ) : (
-                                <Pause className="w-6 h-6" fill="currentColor" />
-                            )}
-                        </button>
-                        <button
-                            onClick={() => {
-                                setToast({ message: "Synchronizing state...", type: 'info' });
-                                socket.emit("join_room", { roomCode, asSpectator: forceSpectator });
-                            }}
-                            className="px-4 py-2 rounded-xl transition-all bg-yellow-600/30 hover:bg-yellow-500/40 text-yellow-500 border border-yellow-500/50 backdrop-blur-md flex items-center justify-center min-w-[56px]"
-                            title="Re-sync Room State"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                        </button>
-                        {/* Claim Host Button (if host is offline) */}
-                        {!isPrimaryHost && gameState?.hostUserId && onlineMap[gameState.hostUserId] === false && (
-                            <button
-                                onClick={handleClaimHost}
-                                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest animate-pulse shadow-lg flex items-center gap-2"
-                                title="Host is offline. Take control of the auction."
-                            >
-                                <AlertTriangle className="w-4 h-4" />
-                                Take Control
-                            </button>
-                        )}
-                        <button
-                            onClick={() => setShowForceEndConfirm(true)}
-                            className="px-4 py-2 rounded-xl transition-all bg-red-600/30 hover:bg-red-500/40 text-red-500 border border-red-500/50 backdrop-blur-md flex items-center justify-center min-w-[56px]"
-                            title="Force End Auction"
-                        >
-                            <Square className="w-6 h-6" fill="currentColor" />
-                        </button>
-                    </div>
-                )}
-
-                <div className="flex-1 flex flex-col items-center justify-evenly lg:justify-center p-2 pt-2 sm:p-4 sm:pt-8 md:p-8 lg:p-12 z-10 overflow-hidden lg:overflow-y-auto custom-scrollbar relative w-full sm:pt-12 lg:pt-0">
+<div className="flex-1 flex flex-col items-center justify-evenly lg:justify-center p-2 pt-2 sm:p-4 sm:pt-8 md:p-8 lg:p-12 z-10 overflow-hidden lg:overflow-y-auto custom-scrollbar relative w-full sm:pt-12 lg:pt-0">
                     <AnimatePresence>
                         {!currentPlayer ? (
                             <motion.div

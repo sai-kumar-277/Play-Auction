@@ -3,6 +3,7 @@
  * High-performance, memory-resident player database.
  * Loaded once at startup to avoid repeated DB pulls or O(N) scans.
  *
+ * Strict League Isolation: IPL (341 men), WPL (103 women), SA20 (249 players).
  * Resilient multi-database loader with automatic fallback & self-seeding.
  */
 const mongoose = require('mongoose');
@@ -88,6 +89,9 @@ class PlayerCache {
 
                         rawPlayers.forEach(p => {
                             const player = normalizePlayer(p, collName);
+                            // Enforce strict league tagging
+                            player.league = leagueKey;
+                            
                             const id = String(player._id || p._id);
                             this.playersMap.set(id, player);
                             this.pools[key].push(id);
@@ -123,35 +127,102 @@ class PlayerCache {
             await this._loadFromUri(mongoUri, false);
         }
 
-        // If primary database had fewer than 50 players (e.g. fresh or only 1 test player),
-        // load the complete authentic roster from the reference database
-        if (this.playersMap.size < 50) {
-            this.log(`[PlayerCache] Primary database has only ${this.playersMap.size} player(s). Loading complete roster from reference database...`);
+        // Count loaded players per league
+        const iplCount = Array.from(this.playersMap.values()).filter(p => p.league === 'ipl').length;
+        const wplCount = Array.from(this.playersMap.values()).filter(p => p.league === 'wpl').length;
+        const sa20Count = Array.from(this.playersMap.values()).filter(p => p.league === 'sa20').length;
+
+        // If primary database had fewer than 50 players, OR was missing WPL / SA20 rosters,
+        // OR had a contaminated single collection (>400 in ipl), reload cleanly from reference database
+        const isContaminatedOrIncomplete = iplCount < 50 || wplCount < 20 || sa20Count < 20 || iplCount > 400;
+
+        if (isContaminatedOrIncomplete) {
+            this.log(`[PlayerCache] Roster check: IPL=${iplCount}, WPL=${wplCount}, SA20=${sa20Count}. Loading clean authentic rosters from reference DB...`);
+            // Reset to prevent mixing
+            this.playersMap.clear();
+            this.pools = {};
+            this.lowestBasePrice = 100000;
+
             await this._loadFromUri(fallbackUri, true);
 
-            // Auto-seed the user's primary database if connected so it's permanently populated
-            if (this.playersMap.size > 0 && mongoUri) {
+            const cleanIpl = Array.from(this.playersMap.values()).filter(p => p.league === 'ipl');
+            const cleanWpl = Array.from(this.playersMap.values()).filter(p => p.league === 'wpl');
+            const cleanSa20 = Array.from(this.playersMap.values()).filter(p => p.league === 'sa20');
+            this.log(`[PlayerCache] Clean reference roster loaded: IPL=${cleanIpl.length}, WPL=${cleanWpl.length}, SA20=${cleanSa20.length}`);
+
+            // Auto-seed user's primary database with segregated collections
+            if (mongoUri) {
                 try {
-                    const userConn = mongoose.createConnection(mongoUri, {
-                        dbName: 'ipl',
-                        serverSelectionTimeoutMS: 10000
-                    });
+                    this.log('[PlayerCache] Auto-seeding user database with segregated league rosters...');
+                    const userConn = mongoose.createConnection(mongoUri, { serverSelectionTimeoutMS: 15000 });
                     await userConn.asPromise();
-                    const iplDataCount = await userConn.db.collection('ipl_data').countDocuments();
-                    if (iplDataCount <= 1) {
-                        this.log('[PlayerCache] Auto-seeding user database ipl_data collection with authentic players...');
-                        try { await userConn.db.collection('ipl_data').deleteMany({}); } catch (_) {}
-                        const allDocs = Array.from(this.playersMap.values()).map((p, idx) => ({ ...p, playerId: p.playerId || String(p._id) || ('PLY_' + idx) }));
-                        if (allDocs.length > 0) {
-                            await userConn.db.collection('ipl_data').insertMany(allDocs);
-                            this.log(`[PlayerCache] Successfully seeded ${allDocs.length} players into user database!`);
-                        }
+
+                    // 1. Seed IPL (ipl.ipl_data)
+                    const iplDb = userConn.useDb('ipl');
+                    try { await iplDb.collection('ipl_data').deleteMany({}); } catch (_) {}
+                    const iplDocs = cleanIpl.map((p, idx) => ({ ...p, league: 'ipl', playerId: p.playerId || String(p._id) || ('IPL_' + idx) }));
+                    if (iplDocs.length > 0) {
+                        await iplDb.collection('ipl_data').insertMany(iplDocs);
+                        this.log(`[PlayerCache] Seeded ${iplDocs.length} IPL players into user database (ipl.ipl_data)`);
                     }
+
+                    // 2. Seed WPL (wpl.wpl_data)
+                    const wplDb = userConn.useDb('wpl');
+                    try { await wplDb.collection('wpl_data').deleteMany({}); } catch (_) {}
+                    const wplDocs = cleanWpl.map((p, idx) => ({ ...p, league: 'wpl', playerId: p.playerId || String(p._id) || ('WPL_' + idx) }));
+                    if (wplDocs.length > 0) {
+                        await wplDb.collection('wpl_data').insertMany(wplDocs);
+                        this.log(`[PlayerCache] Seeded ${wplDocs.length} WPL players into user database (wpl.wpl_data)`);
+                    }
+
+                    // 3. Seed SA20 (SA20.sa20_data)
+                    const sa20Db = userConn.useDb('SA20');
+                    try { await sa20Db.collection('sa20_data').deleteMany({}); } catch (_) {}
+                    const sa20Docs = cleanSa20.map((p, idx) => ({ ...p, league: 'sa20', playerId: p.playerId || String(p._id) || ('SA20_' + idx) }));
+                    if (sa20Docs.length > 0) {
+                        await sa20Db.collection('sa20_data').insertMany(sa20Docs);
+                        this.log(`[PlayerCache] Seeded ${sa20Docs.length} SA20 players into user database (SA20.sa20_data)`);
+                    }
+
                     await userConn.close();
                 } catch (seedErr) {
                     this.log(`[PlayerCache] Note on auto-seeding user database: ${seedErr.message}`);
                 }
             }
+        }
+
+        // Ensure star marquee players like Travis Head are present in IPL roster
+        const hasTravisHead = Array.from(this.playersMap.values()).some(p => (p.name || p.player || '').toLowerCase().includes('travis head'));
+        if (!hasTravisHead) {
+            const travisHead = {
+                _id: 'travis_head_srh_2025',
+                name: 'Travis Head',
+                player: 'Travis Head',
+                role: 'Batsman',
+                nationality: 'Australia',
+                isOverseas: true,
+                league: 'ipl',
+                poolName: 'MARQUEE BATTERS',
+                poolID: 'marquee_batters',
+                basePrice: 200,
+                image_path: 'https://documents.iplt20.com/ipl/IPLHeadshot2024/1020.png',
+                imagepath: 'https://documents.iplt20.com/ipl/IPLHeadshot2024/1020.png',
+                photoUrl: 'https://documents.iplt20.com/ipl/IPLHeadshot2024/1020.png',
+                image: 'https://documents.iplt20.com/ipl/IPLHeadshot2024/1020.png',
+                age: 31,
+                stats: {
+                    battingAvg: 41.5,
+                    strikeRate: 191.5,
+                    highestScore: 102,
+                    runs: 567,
+                    matches: 15,
+                    catches: 8
+                }
+            };
+            this.playersMap.set('travis_head_srh_2025', travisHead);
+            if (!this.pools['ipl_marquee_batters']) this.pools['ipl_marquee_batters'] = [];
+            this.pools['ipl_marquee_batters'].push('travis_head_srh_2025');
+            this.log('[PlayerCache] Added Travis Head into IPL marquee batters');
         }
 
         this.isLoaded = true;
@@ -162,10 +233,6 @@ class PlayerCache {
         return this.playersMap.get(typeof id === 'string' ? id : String(id));
     }
 
-    /**
-     * getPlayerWithData
-     * Synchronous lookup for a player by ID.
-     */
     getPlayerWithData(id) {
         return this.getPlayer(id);
     }
@@ -179,17 +246,17 @@ class PlayerCache {
         const existing = this.playersMap.get(String(id));
         if (existing) {
             this.playersMap.set(String(id), { ...existing, ...updatedData });
-            console.log(`[PlayerCache] Live update applied to memory for player: ${id}`);
         }
     }
 
-    addPlayer(player, poolName) {
+    addPlayer(player, poolName, league = 'ipl') {
         const id = String(player._id || player.id || player.playerId);
         const { normalizePlayer } = require('./playerNormalizer');
         const normalized = normalizePlayer(player, poolName || 'ipl_data');
+        normalized.league = league;
         this.playersMap.set(id, normalized);
         
-        const targetPool = poolName || 'ipl_data';
+        const targetPool = `${league}_${poolName || 'data'}`;
         if (!this.pools[targetPool]) this.pools[targetPool] = [];
         if (!this.pools[targetPool].includes(id)) {
             this.pools[targetPool].push(id);
@@ -197,21 +264,14 @@ class PlayerCache {
         if (normalized.basePrice < this.lowestBasePrice) {
             this.lowestBasePrice = normalized.basePrice;
         }
-        console.log(`[PlayerCache] Live add applied to memory for player: ${id} in pool: ${targetPool}`);
     }
 
-    deletePlayer(id, poolName) {
+    deletePlayer(id) {
         const idStr = String(id);
         this.playersMap.delete(idStr);
-        if (poolName && this.pools[poolName]) {
-            this.pools[poolName] = this.pools[poolName].filter(pid => String(pid) !== idStr);
-        } else {
-            // Remove from all pools
-            for (const pName in this.pools) {
-                this.pools[pName] = this.pools[pName].filter(pid => String(pid) !== idStr);
-            }
+        for (const pName in this.pools) {
+            this.pools[pName] = this.pools[pName].filter(pid => String(pid) !== idStr);
         }
-        console.log(`[PlayerCache] Live delete applied to memory for player: ${idStr}`);
     }
 
     getAllPoolsOrder() {
