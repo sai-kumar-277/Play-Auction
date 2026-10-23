@@ -119,7 +119,18 @@ app.get('/', (req, res) => {
 
 // Health check endpoint — used by UptimeRobot and self-ping to prevent Render cold starts
 app.get('/health', (req, res) => {
-    res.json({ status: 'ok', ts: Date.now(), uptime: process.uptime() });
+    const PlayerCache = require('./utils/PlayerCache');
+    res.json({
+        status: 'ok',
+        ts: Date.now(),
+        uptime: process.uptime(),
+        cache: {
+            isLoaded: PlayerCache.isLoaded,
+            playerCount: PlayerCache.playersMap ? PlayerCache.playersMap.size : 0,
+            poolKeysCount: PlayerCache.pools ? Object.keys(PlayerCache.pools).length : 0,
+            loadLogs: PlayerCache.loadLogs || []
+        }
+    });
 });
 
 // Self-ping every 14 minutes to keep Render free tier alive (avoids 15-min spin-down)

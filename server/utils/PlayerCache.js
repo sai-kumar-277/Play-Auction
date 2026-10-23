@@ -35,19 +35,30 @@ class PlayerCache {
         this.pools = {}; // dbName_poolName -> array of playerIds
         this.isLoaded = false;
         this.lowestBasePrice = 100000; // Infinity proxy
+        this.loadLogs = [];
+    }
+
+    log(msg) {
+        console.log(msg);
+        this.loadLogs.push(`[${new Date().toISOString()}] ${msg}`);
+        if (this.loadLogs.length > 50) this.loadLogs.shift();
     }
 
     async load() {
         if (this.isLoaded) return;
 
-        console.log('[PlayerCache] Pre-loading all player pools into memory...');
+        this.log('[PlayerCache] Pre-loading all player pools into memory...');
 
         const { getCollectionsForLeague } = require('./playerNormalizer');
 
         const mongoUri = process.env.MONGO_URI;
         if (!mongoUri) {
+            this.log('[PlayerCache] ERROR: MONGO_URI not set!');
             throw new Error('[PlayerCache] MONGO_URI not set — cannot load player cache.');
         }
+
+        const maskedUri = mongoUri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:***@');
+        this.log(`[PlayerCache] Connecting using MONGO_URI: ${maskedUri}`);
 
         // Each entry: [cacheKey prefix (lowercase), actual MongoDB dbName]
         // Using separate createConnection() per DB to avoid Atlas cross-db restrictions.
@@ -62,7 +73,7 @@ class PlayerCache {
             try {
                 conn = mongoose.createConnection(mongoUri, {
                     dbName: targetDbName,
-                    serverSelectionTimeoutMS: 10000,
+                    serverSelectionTimeoutMS: 15000,
                     socketTimeoutMS: 45000,
                 });
                 await conn.asPromise(); // wait for connection to be ready
@@ -72,20 +83,22 @@ class PlayerCache {
                 try {
                     collectionsList = await db.listCollections().toArray();
                 } catch (e) {
-                    console.warn(`[PlayerCache] Could not list collections for ${targetDbName}:`, e.message);
+                    this.log(`[PlayerCache] Could not list collections for ${targetDbName}: ${e.message}`);
                     continue;
                 }
 
                 const existingColls = collectionsList.map(c => c.name);
+                this.log(`[PlayerCache] Found ${existingColls.length} collections in ${targetDbName}: ${existingColls.slice(0, 5).join(', ')}...`);
+
                 const collectionsToUse = getCollectionsForLeague(leagueKey).filter(c => c !== 'presigned_players');
                 const collsToLoad = collectionsToUse.filter(c => existingColls.includes(c));
 
                 if (collsToLoad.length === 0) {
-                    console.log(`[PlayerCache] No matching pool collections found in database: ${targetDbName}`);
+                    this.log(`[PlayerCache] No matching pool collections found in database: ${targetDbName}`);
                     continue;
                 }
 
-                console.log(`[PlayerCache] Loading ${collsToLoad.length} pools from ${targetDbName}...`);
+                this.log(`[PlayerCache] Loading ${collsToLoad.length} pools from ${targetDbName}...`);
 
                 await Promise.all(collsToLoad.map(async (collName) => {
                     try {
@@ -103,11 +116,11 @@ class PlayerCache {
                             }
                         });
                     } catch (collErr) {
-                        console.warn(`[PlayerCache] Failed to load ${targetDbName}.${collName}:`, collErr.message);
+                        this.log(`[PlayerCache] Failed to load ${targetDbName}.${collName}: ${collErr.message}`);
                     }
                 }));
             } catch (dbErr) {
-                console.warn(`[PlayerCache] Could not connect to database ${targetDbName}:`, dbErr.message);
+                this.log(`[PlayerCache] Could not connect to database ${targetDbName}: ${dbErr.message}`);
             } finally {
                 if (conn) {
                     try { await conn.close(); } catch (_) {}
@@ -116,7 +129,7 @@ class PlayerCache {
         }
 
         this.isLoaded = true;
-        console.log(`[PlayerCache] Loaded ${this.playersMap.size} players across all databases.`);
+        this.log(`[PlayerCache] Finished: loaded ${this.playersMap.size} players across all databases.`);
     }
 
     getPlayer(id) {
