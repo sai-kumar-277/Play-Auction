@@ -133,6 +133,12 @@ const TeamRow = memo(({
   const sourceCurrency = LEAGUE_DEFAULTS[league] || 'inr';
   const fmt = (lakhs) => fmtCr(lakhs, activeCurrency, sourceCurrency);
 
+  // Check if this card belongs to current user (never allow kicking oneself)
+  const isMyCard = Boolean(
+    (mySocketId && (t.ownerSocketId === mySocketId || t.ownerUserId === mySocketId)) ||
+    (isPrimaryHost && (t.isHost || t.ownerUserId === mySocketId))
+  );
+
   // Use lightweight role counts from server or calculate if roster available
   const counts = t.roleCounts || (roster || []).reduce((acc, p) => {
     const playerRecord = allPlayersMap[p.player] || allPlayersMap[p._id] || {};
@@ -181,10 +187,10 @@ const TeamRow = memo(({
         <div className="absolute inset-y-0 left-0 w-1 bg-white rounded-l-2xl shadow-[0_0_15px_white]"></div>
       )}
 
-      <div className="flex justify-between items-center z-10">
-        <div className="flex items-center gap-3">
+      <div className="flex justify-between items-center z-10 gap-2">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
           {t.teamLogo && (
-            <div className="relative">
+            <div className="relative shrink-0">
               <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center p-1.5 border border-white/10 shadow-lg">
                 <img
                   src={t.teamLogo}
@@ -194,15 +200,15 @@ const TeamRow = memo(({
               </div>
             </div>
           )}
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             <span
-              className="font-black text-[11px] lg:text-[12px] tracking-wider uppercase leading-none mb-1 text-slate-100"
+              className="font-black text-[11px] lg:text-[12px] tracking-wider uppercase leading-none mb-1 text-slate-100 truncate"
             >
               {t.teamName}
             </span>
             <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate max-w-[120px] flex items-center gap-1">
               {t.ownerName}
-              {(mySocketId && (t.ownerSocketId === mySocketId || t.ownerUserId === mySocketId)) ? "(You)" : ""}
+              {isMyCard ? "(You)" : ""}
               {t.isHost ? "(Host)" : coHostUserIds.includes(t.ownerUserId) ? "(Co-Host)" : ""}
               {t.ownerSocketId && voiceParticipants?.has(t.ownerSocketId) && (
                 <span className="ml-1 text-emerald-500 animate-pulse" title="In Voice Chat">
@@ -216,17 +222,51 @@ const TeamRow = memo(({
             </span>
           </div>
         </div>
-        <div className="flex flex-col items-end">
-          <span className="font-mono font-black text-lg lg:text-xl text-white leading-none">
-            {fmt(t.currentPurse)}
-          </span>
-          <span className="text-[8px] font-black text-slate-500 tracking-tighter uppercase mt-1">
-            PURSE REMAINING
-          </span>
-          {(league === 'wpl' || league === 'sa20') && (t.rtmCards || 0) > 0 && (
-            <span className="text-[9px] font-extrabold text-emerald-400 tracking-wider uppercase mt-1">
-              RTM: {t.rtmCards - (t.rtmUsedCount || 0)} LEFT
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-col items-end">
+            <span className="font-mono font-black text-base lg:text-lg text-white leading-none">
+              {fmt(t.currentPurse)}
             </span>
+            <span className="text-[8px] font-black text-slate-500 tracking-tighter uppercase mt-1">
+              PURSE REMAINING
+            </span>
+            {(league === 'wpl' || league === 'sa20') && (t.rtmCards || 0) > 0 && (
+              <span className="text-[9px] font-extrabold text-emerald-400 tracking-wider uppercase mt-1">
+                RTM: {t.rtmCards - (t.rtmUsedCount || 0)} LEFT
+              </span>
+            )}
+          </div>
+          {/* Host actions inline next to purse - strictly hidden on host/user's own card */}
+          {!isMyCard && !t.isHost && (
+            <div className="flex items-center gap-1.5 ml-1" onClick={(e) => e.stopPropagation()}>
+              {isPrimaryHost && t.ownerUserId && onToggleCoHost && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleCoHost(t.ownerUserId);
+                  }}
+                  className={'px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider border transition-all ' + (coHostUserIds.includes(t.ownerUserId)
+                    ? 'bg-[#FFE58F] text-[#1a1205] border-[#FFE58F]'
+                    : 'bg-white/5 text-[#D4AF37]/60 border-[#D4AF37]/20 hover:bg-[#D4AF37]/10')}
+                  title={coHostUserIds.includes(t.ownerUserId) ? 'Remove Co-Host' : 'Make Co-Host'}
+                >
+                  {coHostUserIds.includes(t.ownerUserId) ? 'Co-Host' : '+ Co'}
+                </button>
+              )}
+
+              {isHost && t.ownerSocketId && onKick && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onKick(t.ownerSocketId, t.ownerName);
+                  }}
+                  className="w-6 h-6 rounded-full bg-red-500/15 hover:bg-red-500 text-red-500 hover:text-white flex items-center justify-center transition-all border border-red-500/30 shadow-md shrink-0"
+                  title={'Kick ' + t.ownerName}
+                >
+                  <X size={11} strokeWidth={3} />
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -305,37 +345,6 @@ const TeamRow = memo(({
         )}
       </AnimatePresence>
 
-      {/* Host Action Overlay */}
-      <div className="absolute top-2 right-2 flex items-center gap-2 z-20">
-        {isPrimaryHost && t.ownerUserId !== mySocketId && onToggleCoHost && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleCoHost(t.ownerUserId);
-            }}
-            className={`px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-widest border transition-all ${coHostUserIds.includes(t.ownerUserId)
-              ? "bg-[#FFE58F] text-[#1a1205] border-[#FFE58F]"
-              : "bg-transparent text-[#D4AF37]/60 border-[#D4AF37]/20 hover:bg-[#D4AF37]/10"
-              }`}
-            title={coHostUserIds.includes(t.ownerUserId) ? "Remove Co-Host" : "Make Co-Host"}
-          >
-            {coHostUserIds.includes(t.ownerUserId) ? "Co-Host" : "+ Co-Host"}
-          </button>
-        )}
-
-        {isHost && t.ownerSocketId !== mySocketId && onKick && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onKick(t.ownerSocketId, t.ownerName);
-            }}
-            className="w-7 h-7 rounded-full bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white flex items-center justify-center transition-all border border-red-500/20 shadow-lg"
-            title={`Kick ${t.ownerName}`}
-          >
-            <X size={12} strokeWidth={3} />
-          </button>
-        )}
-      </div>
     </motion.div>
   );
 });

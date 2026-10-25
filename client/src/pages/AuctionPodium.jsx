@@ -1263,11 +1263,11 @@ const AuctionPodium = () => {
             {/* Left Sidebar: Franchises (Responsive) */}
             <div
                 className={`
-                fixed lg:relative inset-y-0 left-0 z-[150] lg:z-10
-                w-full lg:w-80 xl:w-96 bg-[#120a02]/95 lg:bg-transparent backdrop-blur-xl lg:backdrop-blur-none border-r border-yellow-500/10 lg:border-none
+                fixed lg:relative inset-y-0 left-0 z-[150] lg:z-20
+                w-full lg:w-72 xl:w-80 2xl:w-88 shrink-0 bg-[#120a02]/95 lg:bg-[#120a02]/85 backdrop-blur-xl border-r border-[#D4AF37]/20
                 transition-transform duration-300 transform pb-16 lg:pb-0
                 ${activeTab === "teams" ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-                flex flex-col h-[100dvh] lg:h-auto
+                flex flex-col h-[100dvh] lg:h-full
             `}
             >
                 <div className="lg:hidden h-14 bg-[var(--darker-depth)] shrink-0"></div>
@@ -1320,7 +1320,7 @@ const AuctionPodium = () => {
             </div>
 
             {/* Middle Section: Header, Ticker, Arena & Interaction Bar */}
-            <div className={`flex-1 flex-col min-w-0 h-[100dvh] relative overflow-hidden pb-16 lg:pb-0 z-20 ${activeTab === 'podium' ? 'flex' : 'hidden lg:flex'}`}>
+            <div className={`flex-1 flex flex-col min-w-0 h-[100dvh] relative overflow-hidden pb-16 lg:pb-0 z-10 ${activeTab === 'podium' ? 'flex' : 'hidden lg:flex'}`}>
                 {/* Header (Refined for Mobile) */}
                 <header className="relative z-[60] glass-panel border-b border-[#D4AF37]/20 bg-[#1a1205]/95 backdrop-blur-md">
                     <div className="max-w-[2000px] mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
@@ -1669,7 +1669,7 @@ const AuctionPodium = () => {
                         </div>
                     </div>
                 </div>
-<div className="flex-1 flex flex-col items-center justify-evenly lg:justify-center p-2 pt-2 sm:p-4 sm:pt-8 md:p-8 lg:p-12 z-10 overflow-hidden lg:overflow-y-auto custom-scrollbar relative w-full sm:pt-12 lg:pt-0">
+<div className="flex-1 flex flex-col items-center justify-evenly lg:justify-center p-2 pt-2 sm:p-4 sm:pt-8 md:p-6 lg:p-4 xl:p-8 z-10 overflow-hidden lg:overflow-y-auto custom-scrollbar relative w-full sm:pt-12 lg:pt-0">
                     <AnimatePresence>
                         {!currentPlayer ? (
                             <motion.div
@@ -1683,7 +1683,7 @@ const AuctionPodium = () => {
                                 </div>
                             </motion.div>
                         ) : (
-                            <div className="flex-1 flex flex-col lg:flex-row items-center lg:items-center justify-start lg:justify-center w-full max-w-6xl gap-2 sm:gap-8 md:gap-12 lg:gap-20 pb-4 lg:pb-0">
+                            <div className="flex-1 flex flex-col lg:flex-row items-center lg:items-center justify-start lg:justify-center w-full max-w-5xl gap-2 sm:gap-6 md:gap-8 lg:gap-6 xl:gap-10 pb-4 lg:pb-0">
                                 {/* 3D Perspective Player Card */}
                                 <motion.div
                                     key={currentPlayer._id}
@@ -1701,7 +1701,7 @@ const AuctionPodium = () => {
                                         damping: 25,
                                         mass: 1,
                                     }}
-                                    className="w-[240px] sm:w-[380px] aspect-[3/4.2] cinematic-glow-border relative group cursor-pointer shrink-0 flex flex-col mx-auto lg:mx-0 shadow-[0_20px_50px_rgba(0,0,0,0.8)] mt-0 sm:mt-4 md:mt-8"
+                                    className="w-[240px] sm:w-[320px] xl:w-[360px] 2xl:w-[380px] aspect-[3/4.2] cinematic-glow-border relative group cursor-pointer shrink-0 flex flex-col mx-auto lg:mx-0 shadow-[0_20px_50px_rgba(0,0,0,0.8)] mt-0 sm:mt-4 md:mt-8"
                                 >
                                     {/* Frame Corner Ornaments */}
 
@@ -1930,7 +1930,7 @@ const AuctionPodium = () => {
                                                     </motion.div>
 
                                                     {/* Golden Amount Badge - Reduced padding on mobile */}
-                                                    <div className="bg-gradient-to-br from-[#FFE58F] via-[#D4AF37] to-[#996515] p-2.5 sm:p-5 shadow-[0_15px_40px_rgba(212,175,55,0.3)] relative overflow-hidden flex items-center justify-center min-w-[120px] sm:min-w-[240px]"
+                                                    <div className="bg-gradient-to-br from-[#FFE58F] via-[#D4AF37] to-[#996515] p-2.5 sm:p-5 shadow-[0_15px_40px_rgba(212,175,55,0.3)] relative overflow-hidden flex items-center justify-center min-w-[120px] sm:min-w-[180px] lg:min-w-[190px] xl:min-w-[240px]"
                                                         style={{ clipPath: 'polygon(15px 0, calc(100% - 15px) 0, 100% 15px, 100% calc(100% - 15px), calc(100% - 15px) 100%, 15px 100%, 0 calc(100% - 15px), 0 15px)' }}>
                                                         <div className="absolute inset-[2px] bg-gradient-to-br from-[#E6B800] to-[#B38000] pointer-events-none z-0" style={{ clipPath: 'polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px)' }}></div>
                                                         <div className="absolute inset-0 bg-gradient-to-tr from-white/40 through-transparent to-black/10 pointer-events-none z-0"></div>
@@ -1939,17 +1939,17 @@ const AuctionPodium = () => {
                                                             key={currentBid.amount}
                                                             initial={{ scale: 1.2, opacity: 0 }}
                                                             animate={{ scale: 1, opacity: 1 }}
-                                                            className="text-2xl sm:text-6xl font-black font-serif tracking-tighter text-[#1a1205] drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] relative z-10"
+                                                            className="text-2xl sm:text-5xl lg:text-4xl xl:text-6xl font-black font-serif tracking-tighter text-[#1a1205] drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] relative z-10"
                                                         >
                                                             {fmt(currentBid.amount)}
                                                         </motion.div>
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="flex flex-col items-center justify-center p-2 sm:p-6 bg-gradient-to-br from-[#FFE58F] via-[#D4AF37] to-[#996515] shadow-[0_10px_30px_rgba(234,179,8,0.15)] min-w-[130px] sm:min-w-[220px] relative overflow-hidden" style={{ clipPath: 'polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px)' }}>
+                                                <div className="flex flex-col items-center justify-center p-2 sm:p-6 bg-gradient-to-br from-[#FFE58F] via-[#D4AF37] to-[#996515] shadow-[0_10px_30px_rgba(234,179,8,0.15)] min-w-[130px] sm:min-w-[180px] lg:min-w-[190px] xl:min-w-[220px] relative overflow-hidden" style={{ clipPath: 'polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px)' }}>
                                                     <div className="absolute inset-[2px] bg-gradient-to-br from-[#E6B800] to-[#B38000] pointer-events-none z-0" style={{ clipPath: 'polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px)' }}></div>
                                                     <div className="absolute inset-0 bg-gradient-to-tr from-white/30 to-transparent pointer-events-none z-0"></div>
-                                                    <div className="text-2xl sm:text-6xl font-black font-serif text-[#1a1205] tracking-tighter drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)] relative z-10 leading-none">
+                                                    <div className="text-2xl sm:text-5xl lg:text-4xl xl:text-6xl font-black font-serif text-[#1a1205] tracking-tighter drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)] relative z-10 leading-none">
                                                         {fmt(currentPlayer.basePrice)}
                                                     </div>
                                                     <div className="mt-2 text-[9px] sm:text-xs font-black uppercase tracking-[0.25em] text-[#1a1205]/80 relative z-10">
@@ -1960,7 +1960,7 @@ const AuctionPodium = () => {
                                         </div>
 
                                         {/* Timer column — stamp replaces timer in the exact same slot */}
-                                        <div className="flex flex-col items-center justify-start shrink-0 w-16 sm:w-28 md:w-32 self-center">
+                                        <div className="flex flex-col items-center justify-start shrink-0 w-16 sm:w-24 md:w-28 lg:w-24 xl:w-32 self-center">
                                             <AnimatePresence mode="wait">
                                                 {!soldEvent ? (
                                                     <motion.div
@@ -1969,7 +1969,7 @@ const AuctionPodium = () => {
                                                         animate={{ opacity: 1, scale: 1 }}
                                                         exit={{ opacity: 0, scale: 0.9 }}
                                                         transition={{ duration: 0.2 }}
-                                                        className="relative w-16 h-16 sm:w-28 sm:h-28 md:w-32 md:h-32 flex items-center justify-center"
+                                                        className="relative w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-24 lg:h-24 xl:w-32 xl:h-32 flex items-center justify-center"
                                                     >
                                                         {timer <= 3 && (
                                                             <motion.div
@@ -2279,7 +2279,7 @@ const AuctionPodium = () => {
                         </div>
                     );
                 })() : (
-                    <div className="hidden lg:flex h-28 bg-[linear-gradient(90deg,#2a1f00_0%,#d4af37_50%,#2a1f00_100%)] items-center justify-between px-12 z-20 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] relative border-t border-[#FFE58F]/50">
+                    <div className="hidden lg:flex h-24 xl:h-28 bg-[linear-gradient(90deg,#2a1f00_0%,#d4af37_50%,#2a1f00_100%)] items-center justify-between px-6 xl:px-10 z-20 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] relative border-t border-[#FFE58F]/50">
                         {/* Inner highlight line */}
                         <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/30"></div>
                         <div className="flex items-center gap-6">
@@ -2317,19 +2317,19 @@ const AuctionPodium = () => {
                             )}
                         </div>
 
-                        <div className="flex items-center gap-8 justify-end">
+                        <div className="flex items-center gap-4 xl:gap-8 justify-end relative pr-32 xl:pr-40">
                             {myTeam ? (
                                 <>
-                                    <div className="text-right flex flex-col items-end mr-32 xl:mr-48 z-10 relative">
+                                    <div className="text-right flex flex-col items-end z-10 relative">
                                         <div className="text-[10px] text-[#2c1d05] font-black uppercase tracking-widest mb-1">
                                             Next Bid
                                         </div>
-                                        <div className="text-4xl font-black font-serif text-[#1a1103] tracking-tighter drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]">
+                                        <div className="text-2xl xl:text-4xl font-black font-serif text-[#1a1103] tracking-tighter drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]">
                                             {fmt(targetAmount)}
                                         </div>
                                     </div>
-                                    {/* Desktop Paddle: Round Logo Badge & Stick */}
-                                    <div className="absolute bottom-[-4px] right-12 flex flex-col items-center justify-end z-30 pointer-events-none">
+                                    {/* Desktop Paddle: Round Logo Badge & Stick (contained inside middle section) */}
+                                    <div className="absolute bottom-[-4px] right-2 xl:right-4 flex flex-col items-center justify-end z-30 pointer-events-none">
                                         <button
                                             onClick={handleBid}
                                             disabled={
@@ -2359,7 +2359,7 @@ const AuctionPodium = () => {
                                         `}
                                         >
                                             {/* Golden Round Paddle Outer Frame */}
-                                            <div className="w-40 h-40 border-[4px] border-[#FFE58F]/80 bg-[#1a1205] shadow-[0_0_35px_rgba(0,0,0,0.8)] z-10 flex items-center justify-center rounded-full transition-all group-hover:shadow-[0_0_45px_rgba(251,191,36,0.6)] group-hover:border-[#FFF3B0] relative">
+                                            <div className="w-28 h-28 xl:w-36 xl:h-36 border-[3px] xl:border-[4px] border-[#FFE58F]/80 bg-[#1a1205] shadow-[0_0_25px_rgba(0,0,0,0.8)] z-10 flex items-center justify-center rounded-full transition-all group-hover:shadow-[0_0_40px_rgba(251,191,36,0.6)] group-hover:border-[#FFF3B0] relative">
                                                 {/* Pure Gold Inner Circle */}
                                                 <div className="w-[92%] h-[92%] border border-[#FFF3B0]/50 shadow-inner flex items-center justify-center bg-gradient-to-br from-[#FFE58F] via-[#D4AF37] to-[#996515] rounded-full overflow-hidden relative">
                                                     {/* Glossy Overlay */}
@@ -2372,7 +2372,7 @@ const AuctionPodium = () => {
                                                                 <span className="text-xl sm:text-2xl font-black text-[#1a1205] leading-none uppercase drop-shadow-sm">FULL</span>
                                                             ) : myTeam?.teamLogo ? (
                                                                 <>
-                                                                    <img src={myTeam.teamLogo} alt="" className="w-20 h-20 object-contain drop-shadow-md mb-0.5 hover:scale-105 transition-transform" />
+                                                                    <img src={myTeam.teamLogo} alt="" className="w-14 h-14 xl:w-18 xl:h-18 object-contain drop-shadow-md mb-0.5 hover:scale-105 transition-transform" />
                                                                 </>
                                                             ) : (
                                                                 <span className="text-3xl sm:text-5xl font-black text-[#1a1205] uppercase tracking-tighter drop-shadow-sm font-serif">BID</span>
@@ -2383,7 +2383,7 @@ const AuctionPodium = () => {
                                             </div>
 
                                             {/* Golden Stick */}
-                                            <div className="w-5 h-20 -mt-2 bg-gradient-to-b from-[#FFE58F] via-[#D4AF37] to-[#805411] border-x-[3px] border-b-[3px] border-[#FFE58F]/80 z-0 transition-all relative"></div>
+                                            <div className="w-4 h-12 xl:w-5 xl:h-16 -mt-2 bg-gradient-to-b from-[#FFE58F] via-[#D4AF37] to-[#805411] border-x-[2px] xl:border-x-[3px] border-b-[2px] xl:border-b-[3px] border-[#FFE58F]/80 z-0 transition-all relative"></div>
                                         </button>
                                     </div>
                                 </>
@@ -2416,8 +2416,8 @@ const AuctionPodium = () => {
             </div>
             {/* Right Sidebar: History & Chat */}
             <div className={`
-                fixed inset-y-0 right-0 z-[250] lg:relative lg:z-10 bg-[#1a1205]/95 lg:bg-[#1a1205] backdrop-blur-xl lg:backdrop-blur-none
-                w-[85vw] sm:w-[340px] lg:w-72 xl:w-[340px] flex flex-col h-[100dvh] transition-transform duration-300 transform shadow-2xl lg:shadow-none
+                fixed inset-y-0 right-0 z-[250] lg:relative lg:z-20 bg-[#1a1205]/95 lg:bg-[#1a1205] backdrop-blur-xl lg:backdrop-blur-none
+                w-[85vw] sm:w-[320px] lg:w-64 xl:w-72 2xl:w-80 shrink-0 flex flex-col h-[100dvh] lg:h-full transition-transform duration-300 transform shadow-2xl lg:shadow-none border-l border-[#D4AF37]/20
                 ${activeTab === 'chat' ? 'translate-x-0' : 'translate-x-full lg:translate-x-0 flex'}
                 ${activeTab === 'chat' ? 'flex' : 'hidden lg:flex'}
             `}>
