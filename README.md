@@ -3,7 +3,16 @@
 > **The Ultimate Multi-League Cricket Auction Platform**
 
 Built for cricket enthusiasts, fantasy leagues, and friends who want to experience the thrill of a real-time mega auction.
+<p align="center">
+  <a href="https://play-auction.vercel.app/">
+    <img src="https://img.shields.io/badge/Live_Demo-Open_App-brightgreen?style=for-the-badge" alt="Live Demo" />
+  </a>
+  <a href="https://github.com/sai-kumar-277/Play-Auction">
+    <img src="https://img.shields.io/badge/GitHub-Source_Code-black?style=for-the-badge&logo=github" alt="GitHub Repository" />
+  </a>
+</p>
 
+**Live Demo:** [PlayAuction](https://play-auction.vercel.app/)
 ---
 
 ## 📖 Why We Built This
