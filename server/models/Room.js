@@ -9,7 +9,7 @@ const TeamStateSchema = new mongoose.Schema({
     ownerName: { type: String, default: null },
     budgetRemaining: { type: Number, default: 12000 }, // Stored in Lakhs (120 Cr = 12000 Lakhs)
     playersAcquired: [{
-        player: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' },
+        player: { type: mongoose.Schema.Types.Mixed },
         boughtFor: { type: Number },
     }],
     rtmUsed: { type: Boolean, default: false }
@@ -35,9 +35,9 @@ const roomSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    unsoldPlayers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }],
+    unsoldPlayers: [{ type: mongoose.Schema.Types.Mixed }],
     auctionLog: [{
-        player: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' },
+        player: { type: mongoose.Schema.Types.Mixed },
         winningTeam: { type: String }, // teamId
         amount: { type: Number },
         timestamp: { type: Date, default: Date.now }

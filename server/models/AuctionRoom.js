@@ -30,7 +30,7 @@ const auctionRoomSchema = new mongoose.Schema({
         rtmCards: { type: Number, default: 0 },
         rtmUsedCount: { type: Number, default: 0 },
         playersAcquired: [{
-            player: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' },
+            player: { type: mongoose.Schema.Types.Mixed },
             name: { type: String },
             role: { type: String },
             nationality: { type: String },
@@ -38,15 +38,15 @@ const auctionRoomSchema = new mongoose.Schema({
             isOverseas: { type: Boolean, default: false },
             boughtFor: { type: Number }
         }],
-        playing11: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }],
-        impactPlayers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }],
-        playing15: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }], // Keeping for backward compatibility
+        playing11: [{ type: mongoose.Schema.Types.Mixed }],
+        impactPlayers: [{ type: mongoose.Schema.Types.Mixed }],
+        playing15: [{ type: mongoose.Schema.Types.Mixed }], // Keeping for backward compatibility
         evaluation: { type: Object }, // Store detailed AI results
         rank: { type: Number }         // Store final ranking
     }],
 
     currentPlayerIndex: { type: Number, default: 0 },
-    unsoldPlayers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }],
+    unsoldPlayers: [{ type: mongoose.Schema.Types.Mixed }],
 
     // Core bidding state
     currentBidAmount: { type: Number, default: 0 },

@@ -194,8 +194,9 @@ class PlayerCache {
         // Ensure star marquee players like Travis Head are present in IPL roster
         const hasTravisHead = Array.from(this.playersMap.values()).some(p => (p.name || p.player || '').toLowerCase().includes('travis head'));
         if (!hasTravisHead) {
+            const travisId = '747261766973686561643031'; // 24-char hex standard ObjectId (ascii hex for 'travishead01')
             const travisHead = {
-                _id: 'travis_head_srh_2025',
+                _id: travisId,
                 name: 'Travis Head',
                 player: 'Travis Head',
                 role: 'Batsman',
@@ -219,9 +220,9 @@ class PlayerCache {
                     catches: 8
                 }
             };
-            this.playersMap.set('travis_head_srh_2025', travisHead);
+            this.playersMap.set(travisId, travisHead);
             if (!this.pools['ipl_marquee_batters']) this.pools['ipl_marquee_batters'] = [];
-            this.pools['ipl_marquee_batters'].push('travis_head_srh_2025');
+            this.pools['ipl_marquee_batters'].push(travisId);
             this.log('[PlayerCache] Added Travis Head into IPL marquee batters');
         }
 

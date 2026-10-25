@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const auctionTransactionSchema = new mongoose.Schema({
     roomId: { type: String, required: true },
-    playerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Player', required: true },
+    playerId: { type: mongoose.Schema.Types.Mixed, required: true },
     soldPrice: { type: Number, default: 0 },
     soldToTeamId: { type: mongoose.Schema.Types.ObjectId, ref: 'Franchise', default: null },
     soldToSocketId: { type: String, default: null },

@@ -1,4 +1,4 @@
-﻿const Room = require('../models/Room');
+const Room = require('../models/Room');
 const Player = require('../models/Player');
 const { generateQuiz } = require('../services/quizEngine');
 const { buildQuizLeaderboard, getSafeQuizQuestion } = require('../utils/quizHelpers');
@@ -1461,7 +1461,7 @@ const setupSocketHandlers = (io) => {
 
                 // Fetch players from correct league pools
                 const players = await fetchAllPlayers(targetLeague);
-                const playerIds = players.map(p => p._id);
+                const playerIds = players.map(p => p._id).filter(Boolean);
 
                 // Fetch all franchises from correct database or hardcoded fallback
                 const normalizedFranchises = await loadFranchises(targetLeague);
