@@ -364,6 +364,17 @@ cd android
 
 ---
 
+## ⚡ Recent Improvements & Stability Updates
+
+- 🏏 **Multi-League Player Pool Validation & Schema Alignment**: Standardized player record identifiers (24-character hexadecimal ObjectIds) across all 3 leagues (IPL, WPL, SA20), eliminating CastErrors on room initialization and keeping gender-specific and regional rosters strictly segregated across all connected platforms.
+- 🎨 **Adaptive Multi-Platform Auction UI**:
+  - **React Web Client**: Redesigned 3-column responsive desktop layout (`shrink-0` sidebars, contained bottom interaction bar, and scaled bid paddle) preventing panel collisions and overflow on 1024px–1440px displays.
+  - **Android Jetpack Compose Client**: Single-column vertical mobile feed with synchronized countdown timer, real-time bid increments, RTM modal dialogs, and native zero-latency audio/haptics.
+  - **Host Moderation Refinements**: Embedded inline participant management (`+ Co-Host` and kick buttons) with purse-protection layout rules, completely eliminating UI overlaps and preventing self-kick scenarios.
+- 🧠 **Trivia Arena & AI Squad Evaluation Synchronization**: Hardened real-time state transitions between auction completion, Gemini 2.5 Flash / Groq squad evaluation raters, and multi-round quiz questions.
+
+---
+
 ## 🛣️ Roadmap
 
 - [ ] **International Leagues** (BBL, PSL support)
